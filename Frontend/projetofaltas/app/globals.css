@@ -1,8 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVSwaPGR_p.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
 @import "shadcn/tailwind.css";
-
-@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -116,11 +122,32 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+
+.root{
+  display: grid;
+  width: 100vw;
+  place-items: center;
+  background-image: url(https://images.unsplash.com/photo-1772089003225-6eccf98ddbf9?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D);
+  height: 100vh;
+  background-size: cover;
+}
+.main{
+  backdrop-filter: blur(1px);
+  width: 60vw;
+  background-color: white;
+  display: flex;
+  border: #ededed 7px solid;
+  border-radius: 5px;
+  height: 80vh;
+  flex-direction: column;
+ 
+}
+
+.main h1{
+  align-self: center;
+  font-family: "Lato";
+  text-align: center;
+  font-weight: 700;
+  font-size: 120px;
+  margin: 10px;
 }
