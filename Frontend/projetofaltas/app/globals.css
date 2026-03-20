@@ -1,13 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
 @import "tailwindcss";
 @import "tw-animate-css";
-@font-face {
-  font-family: 'Lato';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVSwaPGR_p.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
+
 @import "shadcn/tailwind.css";
 
 @theme inline {
@@ -122,32 +117,163 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-
-.root{
+.root {
   display: grid;
   width: 100vw;
   place-items: center;
-  background-image: url(https://images.unsplash.com/photo-1772089003225-6eccf98ddbf9?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D);
   height: 100vh;
-  background-size: cover;
+  position: relative;
+  overflow: hidden;
+
 }
-.main{
-  backdrop-filter: blur(1px);
+
+.root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url(../assets/CFP\ 662\ 2.jpg);
+  background-size: 101rem;
+  background-position: center;
+  background-attachment: fixed;
+  filter: blur(1px);
+
+  z-index: -1;
+}
+.main {
   width: 60vw;
   background-color: white;
   display: flex;
-  border: #ededed 7px solid;
+  
   border-radius: 5px;
   height: 80vh;
   flex-direction: column;
- 
+}
+.card {
+  background-color: white;
+  padding: 60px;
+  padding-top: 40px;
+
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.form{
+  margin-top:10px;
+
 }
 
-.main h1{
-  align-self: center;
-  font-family: "Lato";
-  text-align: center;
-  font-weight: 700;
-  font-size: 120px;
-  margin: 10px;
+.card-title {
+  font-size: 36px;
+  margin-top: 10px;
+
+
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
 }
+.form-field{
+  margin-top: 20px;
+
+}
+.emailLabel {
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  font-size: 20px;
+}
+.passwordLabel {
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  font-size: 20px;
+
+}
+
+.form-options{
+  margin-top:10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3rem;
+  font-size: 10px;
+  min-width: 400px;
+}
+
+
+
+.checkbox-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+.checkbox-wrap input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.checkbox-wrap input:checked {
+  background-color: #e3000a;
+  color: #e3000a;
+  
+  border-color: #e3000a;
+}
+
+.link-muted,
+.link-accent {
+  text-decoration: none;
+}
+
+.link-muted {
+  color: #4a4a4a;
+}
+
+.link-accent {
+  color: #e3000a;
+  font-weight: 600;
+}
+.btn-primary {
+  margin-top: 30px;
+  width: 100%;
+  border: none;
+  border-radius: 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: #e3000a;
+  padding: 0.95rem 1.1rem;
+  cursor: pointer;
+  transition: background 160ms ease, transform 140ms ease;
+}
+
+.card-footer {
+  margin-top: 0.55rem;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.card-footer a {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .card{
+    padding: 1.5rem;
+  }
+  .form-options {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+  }
+}
+
+
+
+
+
+
+
+
+
