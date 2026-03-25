@@ -37,14 +37,28 @@ namespace Backend.Controllers
         [HttpGet("/ListarAlunosComFaltas")]
         public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosComFaltas()
         {
-            var alunosComfaltas = _context.Aluno.Where(aluno => aluno.QuantidadeFaltas >= 1);
+            var alunos = _context.Aluno.Where(aluno => aluno.QuantidadeFaltas >= 1);
 
-            if (alunosComfaltas.IsNullOrEmpty())
+            if (alunos.IsNullOrEmpty())
             {
                 return NotFound("Não há alunos com faltas registradas!");
             }
 
-            return Ok(alunosComfaltas);
+            return Ok(alunos);
+        }
+
+        // GET: api/Aluno/ListarAlunosComFaltasExcessivas
+        [HttpGet("/ListarAlunosComFaltasExcessivas")]
+        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosComFaltasExcessivas()
+        {
+            var alunos = _context.Aluno.Where(aluno => aluno.QuantidadeFaltas >= 3);
+
+            if (alunos.IsNullOrEmpty())
+            {
+                return NotFound("Não há alunos com faltas excessivas registradas!");
+            }
+
+            return Ok(alunos);
         }
 
         // GET: api/Aluno/ListarAlunosPorNome
@@ -73,6 +87,20 @@ namespace Backend.Controllers
             }
 
             return Ok(alunos);
+        }
+
+        // GET: api/Aluno/ListarAlunosPorTurmaENome
+        [HttpGet("/ListarAlunosPorTurmaENome/{nome}/{turma}")]
+        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorTurmaENome(string nome, string turma)
+        {
+            var alunos = _context.Aluno.Where(aluno => aluno.Nome.Contains(nome) && aluno.Turma.Contains(turma));
+
+            if (alunos.IsNullOrEmpty())
+            {
+                return NotFound("Não há alunos com esse nome nessa turma!");
+            }
+
+            return Ok(await alunos.ToListAsync());
         }
 
         // GET: api/Aluno/ListarAlunoPorId/id
