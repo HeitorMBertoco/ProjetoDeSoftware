@@ -1,4 +1,12 @@
+﻿using Backend.Data;
+using Backend.Dtos.Aluno;
+using Backend.Models;
+using Mapster;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<BackendContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext") ?? throw new InvalidOperationException("Connection string 'BackendContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
@@ -7,6 +15,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+TypeAdapterConfig<PatchAlunoRequest, Aluno>.NewConfig().IgnoreNullValues(true);
 
 var app = builder.Build();
 
