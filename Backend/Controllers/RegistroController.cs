@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
+using Backend.Dtos.Registro;
+using Mapster;
 
 namespace Backend.Controllers
 {
@@ -21,16 +23,16 @@ namespace Backend.Controllers
             _context = context;
         }
 
-        // GET: api/Registro
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Registro>>> GetRegistro()
+        // GET: api/Registro/ListarRegistros
+        [HttpGet("/ListarRegistros")]
+        public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistros()
         {
             return await _context.Registro.ToListAsync();
         }
 
-        // GET: api/Registro/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Registro>> GetRegistro(Guid id)
+        // GET: api/Registro/ListarRegistroPorId/id
+        [HttpGet("/ListarRegistroPorId/{id}")]
+        public async Task<ActionResult<Registro>> ListarRegistroPorId(Guid id)
         {
             var registro = await _context.Registro.FindAsync(id);
 
@@ -42,17 +44,18 @@ namespace Backend.Controllers
             return registro;
         }
 
-        // PUT: api/Registro/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutRegistro(Guid id, Registro registro)
+        // Patch: api/Registro/AtualizarRegistro/id
+        [HttpPatch("/AtualizarRegistro/{id}")]
+        public async Task<IActionResult> AtualizarRegistro(Guid id, PatchRegistroRequest request)
         {
-            if (id != registro.Id)
+            var registro = await _context.Registro.FindAsync(id);
+
+            if (registro == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(registro).State = EntityState.Modified;
+            request.Adapt(registro);
 
             try
             {
@@ -73,20 +76,19 @@ namespace Backend.Controllers
             return NoContent();
         }
 
-        // POST: api/Registro
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Registro>> PostRegistro(Registro registro)
+        // POST: api/Registro/InserirRegistro
+        [HttpPost("/InserirRegistro")]
+        public async Task<ActionResult<Registro>> InserirRegistro(Registro registro)
         {
             _context.Registro.Add(registro);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRegistro", new { id = registro.Id }, registro);
+            return CreatedAtAction("ListarRegistroPorId", new { id = registro.Id }, registro);
         }
 
-        // DELETE: api/Registro/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRegistro(Guid id)
+        // DELETE: api/Registro/DeletarRegistro/id
+        [HttpDelete("/DeletarRegistro/{id}")]
+        public async Task<IActionResult> DeletarRegistro(Guid id)
         {
             var registro = await _context.Registro.FindAsync(id);
             if (registro == null)

@@ -61,7 +61,7 @@ namespace Backend.Controllers
             return Ok(alunos);
         }
 
-        // GET: api/Aluno/ListarAlunosPorNome
+        // GET: api/Aluno/ListarAlunosPorNome/nome
         [HttpGet("/ListarAlunosPorNome/{nome}")]
         public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorNome(string nome)
         {
@@ -75,11 +75,11 @@ namespace Backend.Controllers
             return Ok(alunos);
         }
 
-        // GET: api/Aluno/ListarAlunosPorTurma
-        [HttpGet("/ListarAlunosPorTurma/{turma}")]
-        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorTurma(string turma)
+        // GET: api/Aluno/ListarAlunosPorTurma/turmaId
+        [HttpGet("/ListarAlunosPorTurma/{turmaId}")]
+        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorTurma(Guid turmaId)
         {
-            var alunos = _context.Aluno.Where(aluno => aluno.Turma.Contains(turma));
+            var alunos = _context.Aluno.Where(aluno => aluno.TurmaId == turmaId);
 
             if (alunos.IsNullOrEmpty())
             {
@@ -89,11 +89,11 @@ namespace Backend.Controllers
             return Ok(alunos);
         }
 
-        // GET: api/Aluno/ListarAlunosPorTurmaENome
-        [HttpGet("/ListarAlunosPorTurmaENome/{nome}/{turma}")]
-        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorTurmaENome(string nome, string turma)
+        // GET: api/Aluno/ListarAlunosPorTurmaENome/nome/turma
+        [HttpGet("/ListarAlunosPorTurmaENome/{nome}/{turmaId}")]
+        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorTurmaENome(string nome, Guid turmaId)
         {
-            var alunos = _context.Aluno.Where(aluno => aluno.Nome.Contains(nome) && aluno.Turma.Contains(turma));
+            var alunos = _context.Aluno.Where(aluno => aluno.Nome.Contains(nome) && aluno.TurmaId == turmaId);
 
             if (alunos.IsNullOrEmpty())
             {

@@ -4,6 +4,7 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(BackendContext))]
-    partial class BackendContextModelSnapshot : ModelSnapshot
+    [Migration("20260327115149_AlteracaoRegistro")]
+    partial class AlteracaoRegistro
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,12 +51,12 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("TurmaId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Turma")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TurmaId");
 
                     b.ToTable("Aluno");
                 });
@@ -98,30 +101,6 @@ namespace Backend.Migrations
                     b.ToTable("Registro");
                 });
 
-            modelBuilder.Entity("Backend.Models.Turma", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Curso")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("QuantidadeMaximaAlunos")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Turma");
-                });
-
             modelBuilder.Entity("Backend.Models.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -158,17 +137,6 @@ namespace Backend.Migrations
                     b.ToTable("Usuario");
                 });
 
-            modelBuilder.Entity("Backend.Models.Aluno", b =>
-                {
-                    b.HasOne("Backend.Models.Turma", "Turma")
-                        .WithMany("ListaAlunos")
-                        .HasForeignKey("TurmaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Turma");
-                });
-
             modelBuilder.Entity("Backend.Models.Registro", b =>
                 {
                     b.HasOne("Backend.Models.Aluno", "Aluno")
@@ -178,11 +146,6 @@ namespace Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Aluno");
-                });
-
-            modelBuilder.Entity("Backend.Models.Turma", b =>
-                {
-                    b.Navigation("ListaAlunos");
                 });
 #pragma warning restore 612, 618
         }

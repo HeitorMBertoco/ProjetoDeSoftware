@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
+using Backend.Dtos.Usuario;
+using Mapster;
 
 namespace Backend.Controllers
 {
@@ -21,16 +23,16 @@ namespace Backend.Controllers
             _context = context;
         }
 
-        // GET: api/Usuario
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Usuario>>> GetUsuario()
+        // GET: api/Usuario/ListarUsuarios
+        [HttpGet("/ListarUsuarios")]
+        public async Task<ActionResult<IEnumerable<Usuario>>> ListarUsuarios()
         {
             return await _context.Usuario.ToListAsync();
         }
 
-        // GET: api/Usuario/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Usuario>> GetUsuario(Guid id)
+        // GET: api/Usuario/ListarUsuarioPorId/id
+        [HttpGet("/ListarUsuarioPorId/{id}")]
+        public async Task<ActionResult<Usuario>> ListarUsuarioPorId(Guid id)
         {
             var usuario = await _context.Usuario.FindAsync(id);
 
@@ -42,17 +44,18 @@ namespace Backend.Controllers
             return usuario;
         }
 
-        // PUT: api/Usuario/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUsuario(Guid id, Usuario usuario)
+        // PATCH: api/Usuario/AtualizarUsuario/id
+        [HttpPatch("/AtualizarUsuario/{id}")]
+        public async Task<IActionResult> AtualizarUsuario(Guid id, PatchUsuarioRequest request)
         {
-            if (id != usuario.Id)
+            var usuario = await _context.Usuario.FindAsync(id);
+
+            if (usuario == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(usuario).State = EntityState.Modified;
+            request.Adapt(usuario);
 
             try
             {
@@ -73,20 +76,19 @@ namespace Backend.Controllers
             return NoContent();
         }
 
-        // POST: api/Usuario
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
+        // POST: api/Usuario/InserirUsuario
+        [HttpPost("/InserirUsuario")]
+        public async Task<ActionResult<Usuario>> InserirUsuario(Usuario usuario)
         {
             _context.Usuario.Add(usuario);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
+            return CreatedAtAction("ListarUsuarioPorId", new { id = usuario.Id }, usuario);
         }
 
-        // DELETE: api/Usuario/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUsuario(Guid id)
+        // DELETE: api/Usuario/DeletarUsuario/id
+        [HttpDelete("/DeletarUsuario/{id}")]
+        public async Task<IActionResult> DeletarUsuario(Guid id)
         {
             var usuario = await _context.Usuario.FindAsync(id);
             if (usuario == null)

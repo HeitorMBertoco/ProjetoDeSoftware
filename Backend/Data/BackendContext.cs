@@ -17,5 +17,6 @@ namespace Backend.Data
         public DbSet<Backend.Models.Usuario> Usuario { get; set; } = default!;
         public DbSet<Backend.Models.Aluno> Aluno { get; set; } = default!;
         public DbSet<Backend.Models.Registro> Registro { get; set; } = default!;
+        public DbSet<Backend.Models.Turma> Turma { get; set; } = default!;
     }
 }

@@ -4,6 +4,7 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(BackendContext))]
-    partial class BackendContextModelSnapshot : ModelSnapshot
+    [Migration("20260327170833_Ajustes")]
+    partial class Ajustes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,6 +50,10 @@ namespace Backend.Migrations
                     b.Property<string>("Rm")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Turma")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("TurmaId")
                         .HasColumnType("uniqueidentifier");
@@ -160,13 +167,11 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.Aluno", b =>
                 {
-                    b.HasOne("Backend.Models.Turma", "Turma")
+                    b.HasOne("Backend.Models.Turma", null)
                         .WithMany("ListaAlunos")
                         .HasForeignKey("TurmaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Turma");
                 });
 
             modelBuilder.Entity("Backend.Models.Registro", b =>

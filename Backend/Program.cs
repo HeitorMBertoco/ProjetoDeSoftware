@@ -1,22 +1,34 @@
 ﻿using Backend.Data;
 using Backend.Dtos.Aluno;
+using Backend.Dtos.Registro;
+using Backend.Dtos.Turma;
+using Backend.Dtos.Usuario;
 using Backend.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<BackendContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext") ?? throw new InvalidOperationException("Connection string 'BackendContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 TypeAdapterConfig<PatchAlunoRequest, Aluno>.NewConfig().IgnoreNullValues(true);
+
+TypeAdapterConfig<PatchRegistroRequest, Registro>.NewConfig().IgnoreNullValues(true);
+
+TypeAdapterConfig<PatchUsuarioRequest, Usuario>.NewConfig().IgnoreNullValues(true);
+
+TypeAdapterConfig<PatchTurmaRequest, Turma>.NewConfig().IgnoreNullValues(true);
 
 var app = builder.Build();
 
