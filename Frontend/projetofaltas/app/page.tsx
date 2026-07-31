@@ -1,10 +1,12 @@
 "use client";
 import Image from 'next/image';
 import { Montserrat } from 'next/font/google';
+import { useRouter } from 'next/navigation';
 import { Input } from "@/Components/ui/input";
 import "./globals.css";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <main className="root">
       <section className="card">
@@ -24,7 +26,7 @@ export default function Home() {
 
           <div className="form-options">
             <label className="checkbox-wrap">
-              <input type="checkbox" />
+              <input className='checkbox' type="checkbox" />
               <span>Lembrar de mim por 30 dias</span>
             </label>
             <a href="#" className="link-muted">Esqueceu sua <span className="link-accent">senha?</span></a>
@@ -33,7 +35,7 @@ export default function Home() {
           <button className="btn-primary" type="submit">LOGIN</button>
 
           <p className="card-footer">
-            Não tem uma conta? <a href="#" className="link-accent">Cadastre-se</a>
+            Não tem uma conta? <a href="" onClick={() => router.push("/pages/signup/")} className="link-accent">Cadastre-se</a>
           </p>
         </form>
       </section>
