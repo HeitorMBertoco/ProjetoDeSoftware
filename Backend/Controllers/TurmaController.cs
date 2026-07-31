@@ -78,8 +78,14 @@ namespace Backend.Controllers
 
         // POST: api/Turma/InserirTurma
         [HttpPost("/InserirTurma")]
-        public async Task<ActionResult<Turma>> InserirTurma(Turma turma)
-        {
+        public async Task<ActionResult<Turma>> InserirTurma(PostTurmaRequest request)
+        { 
+            Turma turma = new Turma(
+                request.Nome,
+                request.QuantidadeMaximaAlunos,
+                request.Curso
+            );
+
             _context.Turma.Add(turma);
             await _context.SaveChangesAsync();
 

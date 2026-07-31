@@ -78,8 +78,18 @@ namespace Backend.Controllers
 
         // POST: api/Registro/InserirRegistro
         [HttpPost("/InserirRegistro")]
-        public async Task<ActionResult<Registro>> InserirRegistro(Registro registro)
+        public async Task<ActionResult<Registro>> InserirRegistro(PostRegistroRequest request)
         {
+            Registro registro = new Registro(
+                request.AlunoId,
+                request.Data,
+                request.Motivo ?? "",
+                request.QuemEmitiu,
+                request.QuemPermitiu, 
+                request.QuemBuscou,
+                request.Telefone ?? ""
+            );
+
             _context.Registro.Add(registro);
             await _context.SaveChangesAsync();
 

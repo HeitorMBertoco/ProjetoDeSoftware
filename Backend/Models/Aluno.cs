@@ -13,16 +13,13 @@ public class Aluno
     public int Idade { get; set; }
     [StringLength(11)] public String Cpf { get; set; }
     public String Rm { get; set; }
-    public Guid TurmaId { get; set; }
-    public Turma? Turma { get; set; }
     public int QuantidadeFaltas { get; set; } = 0;
 
-    public Aluno(string nome, int idade, string cpf, string rm, Guid turmaId)
+    public Aluno(string nome, int idade, string cpf, string rm)
     {
         Nome = nome;
         Idade = idade;
         Cpf = cpf;
         Rm = rm;
-        TurmaId = turmaId;
     }
 }

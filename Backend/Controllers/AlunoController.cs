@@ -75,34 +75,6 @@ namespace Backend.Controllers
             return Ok(alunos);
         }
 
-        // GET: api/Aluno/ListarAlunosPorTurma/turmaId
-        [HttpGet("/ListarAlunosPorTurma/{turmaId}")]
-        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorTurma(Guid turmaId)
-        {
-            var alunos = _context.Aluno.Where(aluno => aluno.TurmaId == turmaId);
-
-            if (alunos.IsNullOrEmpty())
-            {
-                return NotFound("Não há alunos nessa turma!");
-            }
-
-            return Ok(alunos);
-        }
-
-        // GET: api/Aluno/ListarAlunosPorTurmaENome/nome/turma
-        [HttpGet("/ListarAlunosPorTurmaENome/{nome}/{turmaId}")]
-        public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorTurmaENome(string nome, Guid turmaId)
-        {
-            var alunos = _context.Aluno.Where(aluno => aluno.Nome.Contains(nome) && aluno.TurmaId == turmaId);
-
-            if (alunos.IsNullOrEmpty())
-            {
-                return NotFound("Não há alunos com esse nome nessa turma!");
-            }
-
-            return Ok(await alunos.ToListAsync());
-        }
-
         // GET: api/Aluno/ListarAlunoPorId/id
         [HttpGet("/ListarAlunoPorId/{id}")]
         public async Task<ActionResult<Aluno>> ListarAlunoPorId(Guid id)
@@ -151,8 +123,15 @@ namespace Backend.Controllers
 
         // POST: api/Aluno/InserirAluno
         [HttpPost("/InserirAluno")]
-        public async Task<ActionResult<Aluno>> InserirAluno(Aluno aluno)
+        public async Task<ActionResult<Aluno>> InserirAluno(PostAlunoRequest request)
         {
+            Aluno aluno = new Aluno(
+                request.Nome,
+                request.Idade,
+                request.Cpf,
+                request.Rm
+            );
+
             _context.Aluno.Add(aluno);
             await _context.SaveChangesAsync();
 

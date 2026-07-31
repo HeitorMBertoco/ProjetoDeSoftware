@@ -78,8 +78,15 @@ namespace Backend.Controllers
 
         // POST: api/Usuario/InserirUsuario
         [HttpPost("/InserirUsuario")]
-        public async Task<ActionResult<Usuario>> InserirUsuario(Usuario usuario)
+        public async Task<ActionResult<Usuario>> InserirUsuario(PostUsuarioRequest request)
         {
+            Usuario usuario = new Usuario(
+                request.Nome,
+                request.Sobrenome ?? "",
+                request.Login,
+                request.Senha
+            );
+
             _context.Usuario.Add(usuario);
             await _context.SaveChangesAsync();
 
