@@ -1,22 +1,16 @@
 import React, { InputHTMLAttributes, forwardRef } from 'react';
 
 export interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
-  /**
-   * Rótulo do checkbox
-   */
+
   label?: string;
   /**
    * Tamanho do checkbox
    * @default 'md'
    */
   size?: 'sm' | 'md' | 'lg';
-  /**
-   * Descricão adicional
-   */
+
   description?: string;
-  /**
-   * Classes CSS adicionais
-   */
+
   className?: string;
 }
 

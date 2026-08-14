@@ -1,9 +1,7 @@
 import React, { LabelHTMLAttributes } from 'react';
 
 export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
-  /**
-   * Texto do rótulo
-   */
+
   children?: React.ReactNode;
   /**
    * Mostrar como obrigatório
@@ -15,13 +13,9 @@ export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
    * @default 'md'
    */
   size?: 'sm' | 'md' | 'lg';
-  /**
-   * Classes CSS adicionais
-   */
+
   className?: string;
-  /**
-   * Dica/informação adicional
-   */
+
   hint?: string;
 }
 

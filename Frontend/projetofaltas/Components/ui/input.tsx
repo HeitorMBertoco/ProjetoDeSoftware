@@ -29,19 +29,10 @@ export interface InputProps
    */
   withShadow?: boolean;
 
-  /**
-   * Classes CSS adicionais
-   */
   className?: string;
 
-  /**
-   * Prefixo (ícone ou elemento)
-   */
   prefix?: React.ReactNode;
 
-  /**
-   * Sufixo (ícone ou elemento)
-   */
   suffix?: React.ReactNode;
 }
 

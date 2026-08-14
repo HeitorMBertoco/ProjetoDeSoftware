@@ -7,13 +7,9 @@ export interface SelectOption {
 }
 
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  /**
-   * Opções do select
-   */
+
   options: SelectOption[];
-  /**
-   * Placeholder/opção padrão
-   */
+
   placeholder?: string;
   /**
    * Tamanho do select
@@ -25,9 +21,7 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
    * @default true
    */
   withBorder?: boolean;
-  /**
-   * Classes CSS adicionais
-   */
+
   className?: string;
 }
 
