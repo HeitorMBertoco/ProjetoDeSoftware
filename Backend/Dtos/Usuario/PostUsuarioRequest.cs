@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Backend.Dtos.Usuario
 {
-    public class PostUsuarioRequest
+    public record PostUsuarioRequest
     {
         public required String Nome { get; set; }
         public String? Sobrenome { get; set; }

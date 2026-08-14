@@ -79,7 +79,7 @@ namespace Backend.Controllers
         // POST: api/Turma/InserirTurma
         [HttpPost("/InserirTurma")]
         public async Task<ActionResult<Turma>> InserirTurma(PostTurmaRequest request)
-        { 
+        {
             Turma turma = new Turma(
                 request.Nome,
                 request.QuantidadeMaximaAlunos,
@@ -90,6 +90,51 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("ListarTurmaPorId", new { id = turma.Id }, turma);
+        }
+
+        // PATCH: api/Turma/InserirAlunos/id
+        [HttpPatch("/InserirAlunos")]
+        public async Task<IActionResult> InserirAlunos(PatchAdicionarAlunosTurmaRequest request)
+        {
+            var turma = await _context.Turma.FindAsync(request.turmaId);
+
+            if (turma == null)
+            {
+                return NotFound();
+            }
+
+            foreach (Aluno aluno in request.Alunos)
+            {
+                try
+                {
+                    var alunoDB = await _context.Aluno.FindAsync(aluno.Id);
+
+                    if(alunoDB)
+                    turma.ListaAlunos.Add(aluno);
+                }
+                catch (Exception e)
+                {
+                    throw new ArgumentException($"Aluno com id {aluno.Id} não existe");
+                }
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TurmaExists(request.turmaId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
         // DELETE: api/Turma/DeletarTurma/id

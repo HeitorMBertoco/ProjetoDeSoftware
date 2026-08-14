@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Backend.Dtos.Registro
 {
-    public class PostRegistroRequest
+    public record PostRegistroRequest
     {
     public Guid AlunoId { get; set; }
     public DateTime Data { get; set; } = DateTime.Now;

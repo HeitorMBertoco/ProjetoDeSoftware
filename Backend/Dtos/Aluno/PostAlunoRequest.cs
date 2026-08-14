@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Backend.Dtos.Aluno
 {
-    public class PostAlunoRequest
+    public record PostAlunoRequest
     {
         public required String Nome { get; set; }
         public int Idade { get; set; }

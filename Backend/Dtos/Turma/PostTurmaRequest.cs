@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Backend.Dtos.Turma
 {
-    public class PostTurmaRequest
+    public record PostTurmaRequest
     {
         public required String Nome { get; set; }
         public int QuantidadeMaximaAlunos { get; set; }
