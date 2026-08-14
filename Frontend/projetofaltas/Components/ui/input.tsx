@@ -1,21 +1,115 @@
-import * as React from "react"
+import React, { InputHTMLAttributes, forwardRef } from 'react';
 
-import { cn } from "@/lib/utils"
+export interface InputProps
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    'size' | 'prefix' | 'suffix'
+  > {
+  /**
+   * Variante visual do input
+   * @default 'default'
+   */
+  variant?: 'default' | 'error' | 'success';
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
-  return (
-    <input
-      type={type}
-      data-slot="input"
-      className={cn(
-        "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30",
-        "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        "aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
-        className
-      )}
-      {...props}
-    />
-  )
+  /**
+   * Tamanho do input
+   * @default 'md'
+   */
+  size?: 'sm' | 'md' | 'lg';
+
+  /**
+   * Mostrar borda ao focar
+   * @default true
+   */
+  withBorder?: boolean;
+
+  /**
+   * Mostrar sombra ao focar
+   * @default false
+   */
+  withShadow?: boolean;
+
+  /**
+   * Classes CSS adicionais
+   */
+  className?: string;
+
+  /**
+   * Prefixo (ícone ou elemento)
+   */
+  prefix?: React.ReactNode;
+
+  /**
+   * Sufixo (ícone ou elemento)
+   */
+  suffix?: React.ReactNode;
 }
 
-export { Input }
+const sizeStyles = {
+  sm: 'px-2.5 py-1.5 text-sm',
+  md: 'px-3 py-2 text-base',
+  lg: 'px-4 py-3 text-lg',
+};
+
+const variantStyles = {
+  default: 'border-gray-300 focus:border-red-500 focus:ring-red-500',
+  error: 'border-red-500 focus:border-red-600 focus:ring-red-500',
+  success: 'border-green-500 focus:border-green-600 focus:ring-green-500',
+};
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      variant = 'default',
+      size = 'md',
+      withBorder = true,
+      withShadow = false,
+      className = '',
+      prefix,
+      suffix,
+      ...props
+    },
+    ref
+  ) => {
+    const baseStyles =
+      'w-full font-medium text-gray-900 placeholder-gray-400 transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-0';
+
+    const borderStyles = withBorder
+      ? `border rounded-lg ${variantStyles[variant]}`
+      : 'border-b border-gray-300 focus:border-red-500';
+
+    const shadowStyles = withShadow ? 'focus:shadow-lg' : '';
+
+    const sizeClass = sizeStyles[size];
+
+    const prefixClass = prefix ? 'pl-10' : '';
+
+    const suffixClass = suffix ? 'pr-10' : '';
+
+    const containerClass = 'relative inline-flex items-center w-full';
+
+    return (
+      <div className={containerClass}>
+        {prefix && (
+          <div className="absolute left-3 flex items-center pointer-events-none text-gray-500">
+            {prefix}
+          </div>
+        )}
+
+        <input
+          ref={ref}
+          className={`${baseStyles} ${borderStyles} ${shadowStyles} ${sizeClass} ${prefixClass} ${suffixClass} ${className}`.trim()}
+          {...props}
+        />
+
+        {suffix && (
+          <div className="absolute right-3 flex items-center pointer-events-none text-gray-500">
+            {suffix}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+Input.displayName = 'Input';

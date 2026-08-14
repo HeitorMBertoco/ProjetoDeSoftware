@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import { Input } from "@/Components/ui/input";
+import { Input } from "@/Components/ui/Input";
 import "./globals.css";
 
 export default function Home() {

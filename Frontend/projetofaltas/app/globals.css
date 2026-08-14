@@ -116,7 +116,11 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
-
+* {
+  
+  user-select: none;
+  font-family: "Montserrat", sans-serif;
+}
 .root {
   display: grid;
   width: 100vw;
@@ -186,13 +190,14 @@
 .emailLabel {
   font-family: "Montserrat", sans-serif;
   font-weight: bold;
-  font-size: 20px;
+  font-size: 15px;
 }
+
 
 .passwordLabel {
   font-family: "Montserrat", sans-serif;
   font-weight: bold;
-  font-size: 20px;
+  font-size: 15px;
 
 }
 
@@ -295,6 +300,23 @@ input[type="checkbox"] {
   z-index: -1;
 }
 
+.containercadastro {
+  width: 80vw;
+  background-color: white;
+  display: flex;
+
+  border-radius: 5px;
+  height: 90vh;
+  flex-direction: column;
+}
+
+
+
+
+
+
+
+
 @media (max-width: 640px) {
   .card {
     padding: 1.5rem;
@@ -306,3 +328,4 @@ input[type="checkbox"] {
     text-align: left;
   }
 }
+
