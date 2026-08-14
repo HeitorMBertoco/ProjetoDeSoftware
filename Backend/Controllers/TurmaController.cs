@@ -96,25 +96,34 @@ namespace Backend.Controllers
         [HttpPatch("/InserirAlunos")]
         public async Task<IActionResult> InserirAlunos(PatchAdicionarAlunosTurmaRequest request)
         {
-            var turma = await _context.Turma.FindAsync(request.turmaId);
+            var turma = await _context.Turma.FindAsync(request.TurmaId);
 
             if (turma == null)
             {
                 return NotFound();
             }
 
-            foreach (Aluno aluno in request.Alunos)
+            foreach (Guid id in request.AlunoIds)
             {
                 try
                 {
-                    var alunoDB = await _context.Aluno.FindAsync(aluno.Id);
+                    var aluno = await _context.Aluno.FindAsync(id);
 
-                    if(alunoDB)
+                    if(aluno == null)
+                    {
+                        throw new ArgumentException($"O aluno com o Id: {id} não existe");
+                    }
+
+                    if (turma.ListaAlunos.Count + request.AlunoIds.Count > turma.QuantidadeMaximaAlunos)
+                    {
+                        throw new IndexOutOfRangeException($"A quantidade de alunos inseridos excede o limite máximo permitido nessa turma");
+                    }
+
                     turma.ListaAlunos.Add(aluno);
                 }
-                catch (Exception e)
+                catch (Exception erro)
                 {
-                    throw new ArgumentException($"Aluno com id {aluno.Id} não existe");
+                    return BadRequest($"Erro ao inserir alunos na turma: {erro}");
                 }
             }
 
@@ -124,7 +133,7 @@ namespace Backend.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!TurmaExists(request.turmaId))
+                if (!TurmaExists(request.TurmaId))
                 {
                     return NotFound();
                 }
