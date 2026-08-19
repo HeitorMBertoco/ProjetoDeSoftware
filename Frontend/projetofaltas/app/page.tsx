@@ -9,8 +9,8 @@ export default function Home() {
   return (
     <main className="root">
       <section className="card">
-        <Image width={312} height={80} className="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/SENAI_S%C3%A3o_Paulo_logo.png"alt="Senai"></Image>
-        <h1 className={"card-title"}>Bem vindo de volta</h1>
+        <Image width={156} height={40} className="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/SENAI_S%C3%A3o_Paulo_logo.png"alt="Senai"></Image>
+        <h1 className="card-title">Bem vindo de volta!</h1>
 
         <form className="form" onSubmit={(e) => e.preventDefault()}>
           <div className="form-field">
@@ -28,7 +28,7 @@ export default function Home() {
               <input className='checkbox' type="checkbox" />
               <span>Lembrar de mim por 30 dias</span>
             </label>
-            <a href="#" className="link-muted">Esqueceu sua <span className="link-accent">senha?</span></a>
+            <a href="#" onClick={() => {router.push("./pages/recovery/")}} className="link-muted">Esqueceu sua <span className="link-accent">senha?</span></a>
           </div>
 
           <button className="btn-primary" type="submit">LOGIN</button>

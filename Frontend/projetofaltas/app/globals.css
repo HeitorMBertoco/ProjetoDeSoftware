@@ -343,7 +343,10 @@ input[type="checkbox"] {
   flex-direction: column;
   justify-content: center;
 }
-
+.card-logo2{
+width: 156;
+height: 40;
+}
 .LogoSenai {
   width: 135px;
   height: auto;

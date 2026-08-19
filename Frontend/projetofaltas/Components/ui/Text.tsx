@@ -34,8 +34,8 @@ export interface TextProps extends HTMLAttributes<HTMLElement> {
 }
 
 const variantStyles = {
-  h1: 'text-4xl font-bold leading-tight',
-  h2: 'text-3xl font-bold leading-tight',
+  h1: 'text-4xl font-bold ',
+  h2: 'text-3xl font-bold ',
   h3: 'text-2xl font-semibold leading-snug',
   subtitle: 'text-lg font-semibold leading-normal',
   body: 'text-base leading-normal',
