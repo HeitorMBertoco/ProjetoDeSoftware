@@ -27,14 +27,18 @@ namespace Backend.Controllers
         [HttpGet("/ListarTurmas")]
         public async Task<ActionResult<IEnumerable<Turma>>> ListarTurmas()
         {
-            return await _context.Turma.ToListAsync();
+            return await _context.Turma
+            .Include(turma => turma.ListaAlunos)
+            .ToListAsync();
         }
 
         // GET: api/Turma/ListarTurmaPorId/id
         [HttpGet("/ListarTurmaPorId/{id}")]
         public async Task<ActionResult<Turma>> ListarTurmaPorId(Guid id)
         {
-            var turma = await _context.Turma.FindAsync(id);
+            var turma = await _context.Turma.Where(turma => turma.Id == id)
+            .Include(turma => turma.ListaAlunos)
+            .FirstOrDefaultAsync();
 
             if (turma == null)
             {
@@ -109,12 +113,17 @@ namespace Backend.Controllers
                 {
                     var aluno = await _context.Aluno.FindAsync(id);
 
-                    if(aluno == null)
+                    if (aluno == null)
                     {
                         throw new ArgumentException($"O aluno com o Id: {id} não existe");
                     }
 
-                    if (turma.ListaAlunos.Count + request.AlunoIds.Count > turma.QuantidadeMaximaAlunos)
+                    if (turma.ListaAlunos.Any(a => a.Id == aluno.Id))
+                    {
+                        throw new ArgumentException($"O aluno com o Id: {id} já está cadastrado nesta turma");
+                    }
+
+                    if (turma.ListaAlunos.Count + 1 > turma.QuantidadeMaximaAlunos)
                     {
                         throw new IndexOutOfRangeException($"A quantidade de alunos inseridos excede o limite máximo permitido nessa turma");
                     }
