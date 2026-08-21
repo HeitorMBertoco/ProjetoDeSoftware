@@ -100,7 +100,9 @@ namespace Backend.Controllers
         [HttpPatch("/InserirAlunos")]
         public async Task<IActionResult> InserirAlunos(PatchAdicionarAlunosTurmaRequest request)
         {
-            var turma = await _context.Turma.FindAsync(request.TurmaId);
+            var turma = await _context.Turma
+                .Include(turma => turma.ListaAlunos)
+                .FirstOrDefaultAsync(turma => turma.Id == request.TurmaId);
 
             if (turma == null)
             {
@@ -127,6 +129,8 @@ namespace Backend.Controllers
                     {
                         throw new IndexOutOfRangeException($"A quantidade de alunos inseridos excede o limite máximo permitido nessa turma");
                     }
+
+                    Console.WriteLine($"-------------{turma.ListaAlunos.Count} e {turma.QuantidadeMaximaAlunos}----------------");
 
                     turma.ListaAlunos.Add(aluno);
                 }
@@ -159,7 +163,11 @@ namespace Backend.Controllers
         [HttpDelete("/DeletarTurma/{id}")]
         public async Task<IActionResult> DeletarTurma(Guid id)
         {
-            var turma = await _context.Turma.FindAsync(id);
+
+            var turma = await _context.Turma
+                .Include(turma => turma.ListaAlunos)
+                .FirstOrDefaultAsync(turma => turma.Id == id);
+
             if (turma == null)
             {
                 return NotFound();
