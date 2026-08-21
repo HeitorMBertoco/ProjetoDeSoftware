@@ -21,10 +21,5 @@ namespace Backend.Models
             Curso = curso;
         }
 
-        public void InserirAlunos(Guid Id)
-        {
-            
-        }
-
     }
 }

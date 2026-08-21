@@ -130,8 +130,6 @@ namespace Backend.Controllers
                         throw new IndexOutOfRangeException($"A quantidade de alunos inseridos excede o limite máximo permitido nessa turma");
                     }
 
-                    Console.WriteLine($"-------------{turma.ListaAlunos.Count} e {turma.QuantidadeMaximaAlunos}----------------");
-
                     turma.ListaAlunos.Add(aluno);
                 }
                 catch (Exception erro)
