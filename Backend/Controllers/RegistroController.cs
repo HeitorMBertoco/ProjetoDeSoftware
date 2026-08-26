@@ -27,14 +27,18 @@ namespace Backend.Controllers
         [HttpGet("/ListarRegistros")]
         public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistros()
         {
-            return await _context.Registro.ToListAsync();
+            return await _context.Registro
+            .Include(registro => registro.Aluno)
+            .ToListAsync();
         }
 
         // GET: api/Registro/ListarRegistroPorId/id
         [HttpGet("/ListarRegistroPorId/{id}")]
         public async Task<ActionResult<Registro>> ListarRegistroPorId(Guid id)
         {
-            var registro = await _context.Registro.FindAsync(id);
+            var registro = await _context.Registro
+            .Include(registro => registro.Aluno)
+            .FirstOrDefaultAsync(registro => registro.Id == id);
 
             if (registro == null)
             {
@@ -53,6 +57,13 @@ namespace Backend.Controllers
             if (registro == null)
             {
                 return NotFound();
+            }
+
+            var aluno = await _context.Aluno.FindAsync(request.AlunoId);
+
+            if (aluno == null)
+            {
+                return NotFound($"Aluno com o id: {request.AlunoId} não encontrado");
             }
 
             request.Adapt(registro);
@@ -80,12 +91,20 @@ namespace Backend.Controllers
         [HttpPost("/InserirRegistro")]
         public async Task<ActionResult<Registro>> InserirRegistro(PostRegistroRequest request)
         {
+
+            var aluno = await _context.Aluno.FindAsync(request.AlunoId);
+
+            if (aluno == null)
+            {
+                return NotFound($"Aluno com o id: {request.AlunoId} não encontrado");
+            }
+
             Registro registro = new Registro(
                 request.AlunoId,
                 request.Data,
                 request.Motivo ?? "",
                 request.QuemEmitiu,
-                request.QuemPermitiu, 
+                request.QuemPermitiu,
                 request.QuemBuscou,
                 request.Telefone ?? ""
             );
