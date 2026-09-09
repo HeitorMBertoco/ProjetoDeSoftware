@@ -136,13 +136,13 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 101%;
+  height: 101%;
   background-image: url(../assets/CFP\ 662\ 2.jpg);
   background-size: 101rem;
   background-position: center;
   background-attachment: fixed;
-  filter: blur(1px);
+  
 
   z-index: -1;
 }
@@ -369,3 +369,8 @@ height: 40;
   }
 }
 
+.sidebar{
+
+  box-shadow: 11px 4px 49.1px 0px rgba(90, 90, 90, 0.21);
+}
+;

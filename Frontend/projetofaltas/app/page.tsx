@@ -1,18 +1,33 @@
 "use client";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Input } from "@/Components/ui/Input";
+
+import { Input } from '@/Components/ui/Input';
 import "./globals.css";
 
 export default function Home() {
   const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    localStorage.setItem('usuario_logado', JSON.stringify({
+      id: 1,
+      nome: "Usuário SENAI",
+      email: "teste@senai.com",
+      token: "mock-token-123"
+    }));
+
+    router.push('/pages/dashboard/');
+  };
+
   return (
     <main className="root">
       <section className="card">
-        <Image width={156} height={40} className="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/SENAI_S%C3%A3o_Paulo_logo.png"alt="Senai"></Image>
+        <Image width={156} height={40} className="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/SENAI_S%C3%A3o_Paulo_logo.png" alt="Senai"></Image>
         <h1 className="card-title">Bem vindo de volta!</h1>
 
-        <form className="form" onSubmit={(e) => e.preventDefault()}>
+        <form className="form" onSubmit={handleLogin}>
           <div className="form-field">
             <label className="emailLabel" htmlFor="email">Email</label>
             <Input id="email" type="email" placeholder="Digite seu email" />
@@ -31,7 +46,7 @@ export default function Home() {
             <a href="#" onClick={() => {router.push("./pages/recovery/")}} className="link-muted">Esqueceu sua <span className="link-accent">senha?</span></a>
           </div>
 
-          <button className="btn-primary" type="submit">LOGIN</button>
+          <button className="btn-primary" type="submit" >LOGIN</button>
 
           <p className="card-footer">
             Não tem uma conta? <a href="" onClick={() => router.push("/pages/signup/")} className="link-accent">Cadastre-se</a>
