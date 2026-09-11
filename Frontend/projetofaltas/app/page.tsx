@@ -1,7 +1,6 @@
 "use client";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-
 import { Input } from '@/Components/ui/Input';
 import "./globals.css";
 
