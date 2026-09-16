@@ -9,9 +9,11 @@ using Backend.Data;
 using Backend.Models;
 using Backend.Dtos.Registro;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RegistroController : ControllerBase

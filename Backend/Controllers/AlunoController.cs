@@ -12,9 +12,11 @@ using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Backend.Dtos.Aluno;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AlunoController : ControllerBase
@@ -39,7 +41,7 @@ namespace Backend.Controllers
         {
             var alunos = _context.Aluno.Where(aluno => aluno.QuantidadeFaltas >= 1);
 
-            if (alunos.IsNullOrEmpty())
+            if (!await alunos.AnyAsync())
             {
                 return NotFound("Não há alunos com faltas registradas!");
             }
@@ -53,7 +55,7 @@ namespace Backend.Controllers
         {
             var alunos = _context.Aluno.Where(aluno => aluno.QuantidadeFaltas >= 3);
 
-            if (alunos.IsNullOrEmpty())
+            if (!await alunos.AnyAsync())
             {
                 return NotFound("Não há alunos com faltas excessivas registradas!");
             }
@@ -67,7 +69,7 @@ namespace Backend.Controllers
         {
             var alunos = _context.Aluno.Where(aluno => aluno.Nome.Contains(nome));
 
-            if (alunos.IsNullOrEmpty())
+            if (!await alunos.AnyAsync())
             {
                 return NotFound("Não há alunos com esse nome!");
             }

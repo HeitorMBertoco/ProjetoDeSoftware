@@ -1,82 +1,120 @@
-﻿using Backend.Data;
+﻿using System.Text;
+using Backend.Data;
 using Backend.Dtos.Aluno;
 using Backend.Dtos.Registro;
 using Backend.Dtos.Turma;
 using Backend.Dtos.Usuario;
 using Backend.Models;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDbContext<BackendContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext") ?? throw new InvalidOperationException("Connection string 'BackendContext' not found.")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext")
+    ?? throw new InvalidOperationException("Connection string 'BackendContext' not found.")));
 
-// Add services to the container.
-builder.Services.AddEndpointsApiExplorer();
+var jwtSection = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSection.GetValue<string>("SecretKey") 
+    ?? throw new InvalidOperationException("Chave secreta não encontrada nas configurações.");
+var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
-builder.Services.AddSwaggerGen();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = securityKey,
+        
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+var requireAuthPolicy = new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build();
+
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(requireAuthPolicy)
+    .AddPolicy("Public", policy => policy.RequireAssertion(_ => true));
 
 builder.Services.AddControllers();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Cole APENAS o token puro gerado no login (sem a palavra Bearer)"
+        };
+
+        if (document.Paths != null)
+        {
+            foreach (var path in document.Paths.Values)
+            {
+                if (path.Operations != null)
+                {
+                    foreach (var operation in path.Operations.Values)
+                    {
+                        operation.Security ??= new List<OpenApiSecurityRequirement>();
+                        var schemeReference = new OpenApiSecuritySchemeReference("Bearer", document);
+                        var requirement = new OpenApiSecurityRequirement
+                        {
+                            [schemeReference] = new List<string>()
+                        };
+                        operation.Security.Add(requirement);
+                    }
+                }
+            }
+        }
+        return Task.CompletedTask;
+    });
+});
 
 TypeAdapterConfig<PatchAlunoRequest, Aluno>.NewConfig().IgnoreNullValues(true);
-
 TypeAdapterConfig<PatchRegistroRequest, Registro>.NewConfig().IgnoreNullValues(true);
-
 TypeAdapterConfig<PatchUsuarioRequest, Usuario>.NewConfig().IgnoreNullValues(true);
-
 TypeAdapterConfig<PatchTurmaRequest, Turma>.NewConfig().IgnoreNullValues(true);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi().AllowAnonymous();
+    
+    app.MapScalarApiReference().RequireAuthorization("Public"); 
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
-
-// using Backend.Models;
-
-// Aluno aluno = new Aluno
-// (
-//     nome: "Pedro",
-//     idade: 19,
-//     cpf: "11122233344",
-//     rm: "12485u5jdjzcn",
-//     turma: "dev"
-// );
-
-// Usuario usuario = new Usuario
-// (
-//     nome: "Maria",
-//     sobrenome: "Silva",
-//     login: "maria@exemplo.com",
-//     senha: "123456"
-// );
-
-// Registro registro = new Registro
-// (
-//     alunoId: aluno.Id,
-//     data: DateTime.Now,
-//     motivo: "Consulta médica",
-//     quemEmitiu: "Maria Silva",
-//     quemPermitiu: "João Pereira",
-//     telefone: "11987654321"
-// );
-
-// Console.WriteLine($"IdAluno: {aluno.Id}, Nome: {aluno.Nome}, Idade: {aluno.Idade}, CPF: {aluno.Cpf}, RM: {aluno.Rm}, Turma: {aluno.Turma}, Quantidade de Faltas: {aluno.QuantidadeFaltas}");
-// Console.WriteLine($"Usuário: {usuario.Nome} {usuario.Sobrenome}, Login: {usuario.Login}, Senha: {usuario.Senha}, Lembrar de mim: {usuario.LembrarDeMim}, Ativo: {usuario.Ativo}");
-// Console.WriteLine($"Registro: Aluno ID: {registro.AlunoId}, Aluno: {aluno.Nome}, Data: {registro.Data}, Motivo: {registro.Motivo}, Emitido por: {registro.QuemEmitiu}, Permitido por: {registro.QuemPermitiu}, Telefone: {registro.Telefone}");
