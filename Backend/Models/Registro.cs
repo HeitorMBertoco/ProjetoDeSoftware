@@ -17,6 +17,7 @@ public class Registro
     [StringLength(100)] public String QuemPermitiu { get; set; }
     [StringLength(100)] public String QuemBuscou { get; set; }
     public String? Telefone { get; set; }
+    public bool Ativo { get; set; } = true;
 
     public Registro(Guid alunoId, DateTime data, string motivo, string quemEmitiu, string quemPermitiu, string quemBuscou, string? telefone)
     {

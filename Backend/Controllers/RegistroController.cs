@@ -34,6 +34,39 @@ namespace Backend.Controllers
             .ToListAsync();
         }
 
+        // GET: api/Registro/ListarRegistrosPorPagina
+        [HttpGet("/ListarRegistrosPorPagina")]
+        public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistrosPorPagina([FromQuery] int pagina = 1)
+        {
+            return await _context.Registro
+            .Include(registro => registro.Aluno)
+            .Skip((pagina - 1) * 10)
+            .Take(10)
+            .ToListAsync();
+        }
+
+        // GET: api/Registro/ListarRegistrosAtivos
+        [HttpGet("/ListarRegistrosAtivos")]
+        public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistrosAtivos()
+        {
+            return await _context.Registro
+            .Include(registro => registro.Aluno)
+            .Where(r => r.Ativo)
+            .ToListAsync();
+        }
+
+        // GET: api/Registro/ListarRegistrosAtivosPorPagina
+        [HttpGet("/ListarRegistrosAtivosPorPagina")]
+        public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistrosAtivosPorPagina([FromQuery] int pagina = 1)
+        {
+            return await _context.Registro
+            .Include(registro => registro.Aluno)
+            .Where(r => r.Ativo)
+            .Skip((pagina - 1) * 10)
+            .Take(10)
+            .ToListAsync();
+        }
+
         // GET: api/Registro/ListarRegistroPorId/id
         [HttpGet("/ListarRegistroPorId/{id}")]
         public async Task<ActionResult<Registro>> ListarRegistroPorId(Guid id)
@@ -117,17 +150,18 @@ namespace Backend.Controllers
             return CreatedAtAction("ListarRegistroPorId", new { id = registro.Id }, registro);
         }
 
-        // DELETE: api/Registro/DeletarRegistro/id
-        [HttpDelete("/DeletarRegistro/{id}")]
-        public async Task<IActionResult> DeletarRegistro(Guid id)
+        // DELETE: api/Registro/AlternarEstadoRegistro/id
+        [HttpDelete("/AlternarEstadoRegistro/{id}")]
+        public async Task<IActionResult> AlternarEstadoRegistro(Guid id)
         {
             var registro = await _context.Registro.FindAsync(id);
+
             if (registro == null)
             {
                 return NotFound();
             }
 
-            _context.Registro.Remove(registro);
+            registro.Ativo = registro.Ativo ? false : true;
             await _context.SaveChangesAsync();
 
             return NoContent();
