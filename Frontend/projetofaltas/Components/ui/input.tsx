@@ -9,7 +9,7 @@ export interface InputProps
    * Variante visual do input
    * @default 'default'
    */
-  variant?: 'default' | 'error' | 'success';
+  variant?: 'default' | 'error' | 'success' | 'ghost' ;
 
   /**
    * Tamanho do input
@@ -46,6 +46,7 @@ const variantStyles = {
   default: 'border-gray-300 focus:border-red-500 focus:ring-red-500',
   error: 'border-red-500 focus:border-red-600 focus:ring-red-500',
   success: 'border-green-500 focus:border-green-600 focus:ring-green-500',
+  ghost: 'border-gray-300 focus:border-red-500 focus:ring-red-500'
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(

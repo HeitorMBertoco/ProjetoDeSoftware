@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/Components/ui/Button';
 import ImagemSenai from "@/assets/SENAI-SP.jpg";
 import Image from 'next/image';
+import { SearchIcon } from 'lucide-react';
+import { Input } from '@/Components/ui/Input';
 
 
 interface Usuario {
@@ -14,7 +16,13 @@ interface Usuario {
 export default function HomeDashboard() {
   const router = useRouter();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [botao, setbotao] = useState<"red" | "disable">("disable")
+  const [botao1, setbotao1] = useState<"red" | "disable">("disable")
 
+  const btStyles = {
+    red: 'danger',
+    disable: 'ghost'
+  } as const
   useEffect(() => {
     const dadosGravados = localStorage.getItem('usuario_logado');
 
@@ -42,16 +50,16 @@ export default function HomeDashboard() {
           <section className='sidebar flex flex-col w-[15vw] rounded-2xl items-center bg-white shadow-black  h-[90vh] p-7 z-1'>
             <Image src={ImagemSenai} alt="Senai" width={100} height={37.5} />
 
-            <Button variant='danger' className='mb-3 mt-3 text-center w-[11vw] h-[7vh]'>Reg. Entradas</Button>
+            <Button variant={btStyles[botao as keyof typeof btStyles]} className='mb-3 mt-3 text-center w-[11vw] h-[7vh]' onClick={() => {setbotao("red"); setbotao1("disable")}}>Reg. Entradas</Button>
 
-            <Button variant='ghost' className='mb-3 text-center border w-[11vw]  h-[7vh]'>Lista De Alunos</Button>
+            <Button variant={btStyles[botao1 as keyof typeof btStyles]} className='mb-3 text-center  w-[11vw]  h-[7vh] ' onClick={() => {setbotao1("red"); setbotao("disable")}}>Lista De Alunos</Button>
 
 
 
           </section>
-          <section className='flex flex-col w-[75vw] h-[90vh] z-0l rounded-2xl'>
+          <section className='flex flex-col w-[75vw] h-[90vh] z-0l rounded-2xl gap-4'>
             <div className='flex flex-row justify-center items-center h-[10vh]'>
-              <div className="search w-[40vw] bg-white shadow-black h-[7vh] mr-[3vw] rounded-4xl"></div>
+              <div className="search w-[40vw] bg-white shadow-black h-[7vh] mr-[3vw] items-center flex gap-1 rounded-4xl"><SearchIcon className='m-4 text-zinc-700'></SearchIcon><input className='placeholder-zinc-500 border-b-0 focus:border-0 hover:border-0 w-full  outline-0 font-medium h-full' placeholder='Pesquisar..' /> </div>
               <div className="inbox h-[7vmin] w-[10vw] rounded-4xl shadow-black bg-white mr-[3vw]"></div>
               <div className="profile flex flex-col flex-wrap justify-center gap-1.5 w-[10vw] h-[10vh] ">
                 <div className="avatar h-[7vmin] w-[7vmin] rounded-4xl shadow-black bg-white"></div>
@@ -59,9 +67,21 @@ export default function HomeDashboard() {
                 <span className="avatartext font-bold text-[0.8vw] mb-0.5 text-zinc-400">gmail.com@algo</span>
               </div>
             </div>
-            <div className='flex flex-col'>
-              <div> <table></table></div>
-              
+            <div className='flex flex-col  h-[80vh] items-center'>
+              <div className=' w-[70vw] h-[70vh]'> 
+                <table className='bg-white w-[70vw] h-[70vh] rounded-2xl border'>
+                <thead>
+                    <tr className='w-auto h-[3vh]'>
+                      <th>abuh</th>
+                      <th>abuh</th>
+                      <th>abu</th>
+                      </tr>
+                </thead>
+                <tbody>
+                    <tr></tr>
+                </tbody>
+                </table></div>
+
             </div>
 
           </section>
