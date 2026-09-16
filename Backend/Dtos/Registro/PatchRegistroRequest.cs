@@ -14,5 +14,6 @@ namespace Backend.Dtos.Registro
         public String? QuemPermitiu { get; set; }
         public String? QuemBuscou { get; set; }
         public String? Telefone { get; set; }
+        public Boolean? Ativo { get; set; }
     }
 }

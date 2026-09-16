@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +21,20 @@ builder.Services.AddDbContext<BackendContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext")
     ?? throw new InvalidOperationException("Connection string 'BackendContext' not found.")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "FrontEnd",
+        policy =>
+            {
+                policy
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            });
+});
+
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSection.GetValue<string>("SecretKey") 
+var secretKey = jwtSection.GetValue<string>("SecretKey")
     ?? throw new InvalidOperationException("Chave secreta não encontrada nas configurações.");
 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
@@ -37,7 +50,7 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = securityKey,
-        
+
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
@@ -103,13 +116,23 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().AllowAnonymous();
-    
-    app.MapScalarApiReference().RequireAuthorization("Public"); 
+
+    app.MapScalarApiReference().RequireAuthorization("Public");
 }
+
+app.UseCors("FrontEnd");
 
 app.UseHttpsRedirection();
 
 app.UseRouting();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens")
+    ),
+    RequestPath = "/imagens"
+});
 
 app.UseAuthentication();
 
