@@ -78,6 +78,54 @@ namespace Backend.Controllers
             return NoContent();
         }
 
+        // PATCH: api/Usuario/AtualizarImagemUsuario/id
+        [HttpPatch("/AtualizarImagemUsuario/{id}")]
+        public async Task<IActionResult> AtualizarImagemUsuario(Guid id, IFormFile arquivo)
+        {
+            var usuario = await _context.Usuario.FindAsync(id);
+
+            if (usuario == null)
+            {
+                return NotFound("usuario não encontrado");
+            }
+
+            var extensao = Path.GetExtension(arquivo.FileName).ToLower();
+
+            var diretorioDestino = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens");
+
+            var caminhoArquivo = Path.Combine(diretorioDestino, $"{id}{extensao}");
+
+            if (!string.IsNullOrEmpty(usuario.NomeArquivoFoto) && System.IO.File.Exists(Path.Combine(diretorioDestino, usuario.NomeArquivoFoto)))
+            {
+                System.IO.File.Delete(Path.Combine(diretorioDestino, usuario.NomeArquivoFoto));
+            }
+
+            using (var stream = new FileStream(caminhoArquivo, FileMode.Create))
+            {
+                await arquivo.CopyToAsync(stream);
+            }
+
+            usuario.NomeArquivoFoto = Path.Combine($"{id}{extensao}");
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UsuarioExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
         // POST: api/Usuario/InserirUsuario
         [HttpPost("/InserirUsuario")]
         public async Task<ActionResult<Usuario>> InserirUsuario(PostUsuarioRequest request)
@@ -103,6 +151,18 @@ namespace Backend.Controllers
             if (usuario == null)
             {
                 return NotFound();
+            }
+
+            if (!string.IsNullOrEmpty(usuario.NomeArquivoFoto))
+            {
+                var diretorioDestino = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagens");
+
+                var caminhoArquivo = Path.Combine(diretorioDestino, usuario.NomeArquivoFoto);
+
+                if (System.IO.File.Exists(caminhoArquivo))
+                {
+                    System.IO.File.Delete(caminhoArquivo);
+                }
             }
 
             _context.Usuario.Remove(usuario);
