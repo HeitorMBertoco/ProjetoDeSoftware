@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Backend.Data; // Certifique-se de importar o seu contexto
+using Backend.Data;
 using Backend.Dtos.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +17,6 @@ public class AuthController : ControllerBase
     private readonly BackendContext _context;
     private readonly IConfiguration _configuration;
 
-    // Injetamos o banco de dados e a configuração da chave
     public AuthController(BackendContext context, IConfiguration configuration)
     {
         _context = context;
@@ -31,9 +30,7 @@ public class AuthController : ControllerBase
         var usuario = await _context.Usuario
             .FirstOrDefaultAsync(u => u.Login == request.Login);
 
-        // 2. Valida se o usuário existe e se a senha está correta 
-        // (Nota: Em produção, lembre-se de usar hash de senha como BCrypt/Argon2!)
-        if (usuario == null || usuario.Senha != request.Senha)
+        if (usuario == null || !usuario.VerificarSenha(request.Senha))
         {
             return Unauthorized(new { mensagem = "Credenciais inválidas." });
         }
@@ -48,6 +45,11 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Name, usuario.Login),
             new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
         };
+
+        if (string.IsNullOrWhiteSpace(request.Login) || string.IsNullOrWhiteSpace(request.Senha))
+        {
+            return Unauthorized(new { mensagem = "Credenciais inválidas." });
+        }
 
         var secretKey = _configuration.GetValue<string>("JwtSettings:SecretKey") 
             ?? throw new InvalidOperationException("Chave secreta não configurada.");

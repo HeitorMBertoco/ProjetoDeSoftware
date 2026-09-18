@@ -57,7 +57,31 @@ namespace Backend.Controllers
                 return NotFound();
             }
 
-            request.Adapt(usuario);
+            if(request.Nome != null){
+                usuario.Nome = request.Nome;
+            }
+
+            if(request.Sobrenome != null){
+                usuario.Sobrenome = request.Sobrenome;
+            }
+
+            if(request.Login != null){
+                usuario.Login = request.Login;
+            }
+
+            if(request.Senha != null){
+                var (hash, salt) = SenhaUsuario.Criar(request.Senha);
+                usuario.SenhaHash = hash;
+                usuario.SenhaSalt = salt;
+            }
+
+            if(request.LembrarDeMim != null){
+                usuario.LembrarDeMim = request.LembrarDeMim.Value;
+            }
+
+            if(request.Ativo != null){
+                usuario.Ativo = request.Ativo.Value;
+            }
 
             try
             {
@@ -130,7 +154,7 @@ namespace Backend.Controllers
         [HttpPost("/InserirUsuario")]
         public async Task<ActionResult<Usuario>> InserirUsuario(PostUsuarioRequest request)
         {
-            Usuario usuario = new Usuario(
+            Usuario usuario = Usuario.CriarComSenha(
                 request.Nome,
                 request.Sobrenome ?? "",
                 request.Login,

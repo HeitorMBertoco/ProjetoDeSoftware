@@ -5,19 +5,36 @@ namespace Backend.Models;
 public class Usuario
 {
     [Key] public Guid Id { get; set; }
-    [StringLength(100)] public String Nome { get; set; }
-    [StringLength(150)] public String? Sobrenome { get; set; }
-    [StringLength(100)] public String Login { get; set; }
-    [StringLength(32)] public String Senha { get; set; }
-    public Boolean LembrarDeMim { get; set; } = false;
-    public String? NomeArquivoFoto { get; set; }
-    public Boolean Ativo { get; set; } = true;
+    [StringLength(100)] public string Nome { get; set; } = string.Empty;
+    [StringLength(150)] public string? Sobrenome { get; set; }
+    [StringLength(100)] public string Login { get; set; } = string.Empty;
+    [Required] public byte[] SenhaHash { get; set; } = Array.Empty<byte>();
+    [Required] public byte[] SenhaSalt { get; set; } = Array.Empty<byte>();
+    public bool LembrarDeMim { get; set; } = false;
+    public string? NomeArquivoFoto { get; set; }
+    public bool Ativo { get; set; } = true;
 
-    public Usuario(string nome, string? sobrenome, string login, string senha)
+    public Usuario()
     {
-        Nome = nome;
-        Sobrenome = sobrenome;
-        Login = login;
-        Senha = senha;
+    }
+
+    public static Usuario CriarComSenha(string nome, string? sobrenome, string login, string senha)
+    {
+        var (hash, salt) = SenhaUsuario.Criar(senha);
+
+        return new Usuario
+        {
+            Nome = nome,
+            Sobrenome = sobrenome,
+            Login = login,
+            SenhaHash = hash,
+            SenhaSalt = salt,
+            Ativo = true
+        };
+    }
+
+    public bool VerificarSenha(string senha)
+    {
+        return SenhaUsuario.Verificar(senha, SenhaHash, SenhaSalt);
     }
 }
