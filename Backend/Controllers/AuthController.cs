@@ -26,7 +26,12 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] PostLoginRequest request)
-    {
+    {        
+        if (string.IsNullOrWhiteSpace(request.Login) || string.IsNullOrWhiteSpace(request.Senha))
+        {
+            return Unauthorized(new { mensagem = "Credenciais inválidas." });
+        }
+
         var usuario = await _context.Usuario
             .FirstOrDefaultAsync(u => u.Login == request.Login);
 
@@ -45,11 +50,6 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Name, usuario.Login),
             new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
         };
-
-        if (string.IsNullOrWhiteSpace(request.Login) || string.IsNullOrWhiteSpace(request.Senha))
-        {
-            return Unauthorized(new { mensagem = "Credenciais inválidas." });
-        }
 
         var secretKey = _configuration.GetValue<string>("JwtSettings:SecretKey") 
             ?? throw new InvalidOperationException("Chave secreta não configurada.");
