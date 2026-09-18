@@ -11,8 +11,7 @@ namespace Backend.Dtos.Usuario
         public String? Sobrenome { get; set; }
         public String? Login { get; set; }
         public String? Senha { get; set; }
-        public Boolean? LembrarDeMim { get; set; }        
-        public String? NomeArquivoFoto { get; set; }
+        public Boolean? LembrarDeMim { get; set; }
         public Boolean? Ativo { get; set; }
     }
 }
