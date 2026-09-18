@@ -48,7 +48,7 @@ const colorStyles = {
   muted: 'text-gray-600',
   primary: 'text-blue-600',
   error: 'text-red-600',
-  success: 'text-green-600',
+  success: 'text-gray-100',
 };
 
 const weightStyles = {

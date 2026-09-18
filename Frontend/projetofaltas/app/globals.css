@@ -139,7 +139,7 @@
   width: 101%;
   height: 101%;
   background-image: url(../assets/CFP\ 662\ 2.jpg);
-  background-size: 101rem;
+  background-size: cover;
   background-position: center;
   background-attachment: fixed;
   
