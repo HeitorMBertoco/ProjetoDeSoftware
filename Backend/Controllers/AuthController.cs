@@ -95,7 +95,7 @@ public class AuthController : ControllerBase
         var emailRequest = new EmailRequest
         {
             ToEmail = request.Email,
-            Subject = "Recuperação de Senha - Teste de Sistema",
+            Subject = "Recuperação de Senha",
             Body = $@"
                 <div style='font-family: Arial, sans-serif; padding: 20px;'>
                     <h2>Recuperação de Conta</h2>
