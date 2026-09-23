@@ -137,12 +137,15 @@ namespace Backend.Controllers
             Registro registro = new Registro(
                 request.AlunoId,
                 request.Data,
+                request.EntradaSaida,
                 request.Motivo ?? "",
                 request.QuemEmitiu,
                 request.QuemPermitiu,
                 request.QuemBuscou,
                 request.Telefone ?? ""
             );
+
+            aluno.QuantidadeFaltas += 1;
 
             _context.Registro.Add(registro);
             await _context.SaveChangesAsync();

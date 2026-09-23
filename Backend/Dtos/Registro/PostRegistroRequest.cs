@@ -10,6 +10,7 @@ namespace Backend.Dtos.Registro
     public Guid AlunoId { get; set; }
     public DateTime Data { get; set; } = DateTime.Now;
     public String? Motivo { get; set; }
+    public required String EntradaSaida { get; set; }
     public required String QuemEmitiu { get; set; }
     public required String QuemPermitiu { get; set; }
     public required String QuemBuscou { get; set; }
