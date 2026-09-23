@@ -10,6 +10,7 @@ namespace Backend.Dtos.Registro
         public Guid? AlunoId { get; set; }
         public DateTime? Data { get; set; }
         public String? Motivo { get; set; }
+        public String? EntradaSaida { get; set; }
         public String? QuemEmitiu { get; set; }
         public String? QuemPermitiu { get; set; }
         public String? QuemBuscou { get; set; }
