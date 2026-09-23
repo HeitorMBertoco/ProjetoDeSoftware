@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Microsoft.Extensions.FileProviders;
+using Backend.Dtos.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,9 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader();
             });
 });
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<Hasher>();
 
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSection.GetValue<string>("SecretKey")

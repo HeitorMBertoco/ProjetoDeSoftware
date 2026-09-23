@@ -6,6 +6,15 @@ namespace Backend.Models
 {
     public class Hasher
     {
+        public string GerarTokenRecuperacao()
+        {
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                byte[] tokenData = new byte[32];
+                rng.GetBytes(tokenData);
+                return Convert.ToBase64String(tokenData);
+            }
+        }
         public byte[] HashPassword(string password, byte[] salt)
         {
             using (var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password)))

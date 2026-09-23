@@ -10,6 +10,8 @@ public class Usuario
     [StringLength(100)] public string Login { get; set; } = string.Empty;
     [Required] public byte[] SenhaHash { get; set; } = Array.Empty<byte>();
     [Required] public byte[] SenhaSalt { get; set; } = Array.Empty<byte>();
+    public string? TokenRecuperacao { get; set; }
+    public DateTime? TokenValidade { get; set; }
     public bool LembrarDeMim { get; set; } = false;
     public string? NomeArquivoFoto { get; set; }
     public bool Ativo { get; set; } = true;
