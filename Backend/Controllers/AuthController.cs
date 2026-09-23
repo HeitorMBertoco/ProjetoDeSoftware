@@ -29,6 +29,7 @@ public class AuthController : ControllerBase
         _hasher = hasher;
     }
 
+    // POST: api/Auth/Login
     [HttpPost("Login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] PostLoginRequest request)
@@ -75,6 +76,7 @@ public class AuthController : ControllerBase
         return Ok(new { token = tokenString, tipo = "Bearer" });
     }
 
+    // POST: api/Auth/RecuperarSenha
     [HttpPost("RecuperarSenha")]
     public async Task<IActionResult> RecuperarSenha([FromBody] RecuperarSenhaRequest request)
     {
@@ -121,6 +123,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    // POST: api/Auth/ValidarTokenRecuperacao
     [HttpPost("ValidarTokenRecuperacao")]
     public async Task<IActionResult> ValidarTokenRecuperacao([FromBody] ValidarTokenRecuperacaoRequest request)
     {
