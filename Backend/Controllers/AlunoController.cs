@@ -29,14 +29,14 @@ namespace Backend.Controllers
         }
 
         // GET: api/Aluno/ListarAlunos
-        [HttpGet("/ListarAlunos")]
+        [HttpGet("ListarAlunos")]
         public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunos()
         {
             return await _context.Aluno.ToListAsync();
         }
 
         // GET: api/Aluno/ListarAlunosComFaltas
-        [HttpGet("/ListarAlunosComFaltas")]
+        [HttpGet("ListarAlunosComFaltas")]
         public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosComFaltas()
         {
             var alunos = _context.Aluno.Where(aluno => aluno.QuantidadeFaltas >= 1);
@@ -50,7 +50,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Aluno/ListarAlunosComFaltasExcessivas
-        [HttpGet("/ListarAlunosComFaltasExcessivas")]
+        [HttpGet("ListarAlunosComFaltasExcessivas")]
         public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosComFaltasExcessivas()
         {
             var alunos = _context.Aluno.Where(aluno => aluno.QuantidadeFaltas >= 3);
@@ -64,7 +64,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Aluno/ListarAlunosPorNome/nome
-        [HttpGet("/ListarAlunosPorNome/{nome}")]
+        [HttpGet("ListarAlunosPorNome/{nome}")]
         public async Task<ActionResult<IEnumerable<Aluno>>> ListarAlunosPorNome(string nome)
         {
             var alunos = _context.Aluno.Where(aluno => aluno.Nome.Contains(nome));
@@ -78,7 +78,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Aluno/ListarAlunoPorId/id
-        [HttpGet("/ListarAlunoPorId/{id}")]
+        [HttpGet("ListarAlunoPorId/{id}")]
         public async Task<ActionResult<Aluno>> ListarAlunoPorId(Guid id)
         {
             var aluno = await _context.Aluno.FindAsync(id);
@@ -92,7 +92,7 @@ namespace Backend.Controllers
         }
 
         // PATCH: api/Aluno/AtualizarAluno/id
-        [HttpPatch("/AtualizarAluno/{id}")]
+        [HttpPatch("AtualizarAluno/{id}")]
         public async Task<IActionResult> AtualizarAluno(Guid id, PatchAlunoRequest request)
         {
             var aluno = await _context.Aluno.FindAsync(id);
@@ -124,7 +124,7 @@ namespace Backend.Controllers
         }
 
         // POST: api/Aluno/InserirAluno
-        [HttpPost("/InserirAluno")]
+        [HttpPost("InserirAluno")]
         public async Task<ActionResult<Aluno>> InserirAluno(PostAlunoRequest request)
         {
             Aluno aluno = new Aluno(
@@ -141,7 +141,7 @@ namespace Backend.Controllers
         }
 
         // DELETE: api/Aluno/DeletarAluno/id
-        [HttpDelete("/DeletarAluno/{id}")]
+        [HttpDelete("DeletarAluno/{id}")]
         public async Task<IActionResult> DeletarAluno(Guid id)
         {
             var aluno = await _context.Aluno.FindAsync(id);

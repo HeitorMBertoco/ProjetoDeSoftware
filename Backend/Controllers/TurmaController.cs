@@ -26,7 +26,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Turma/ListarTurmas
-        [HttpGet("/ListarTurmas")]
+        [HttpGet("ListarTurmas")]
         public async Task<ActionResult<IEnumerable<Turma>>> ListarTurmas()
         {
             return await _context.Turma
@@ -35,7 +35,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Turma/ListarTurmaPorId/id
-        [HttpGet("/ListarTurmaPorId/{id}")]
+        [HttpGet("ListarTurmaPorId/{id}")]
         public async Task<ActionResult<Turma>> ListarTurmaPorId(Guid id)
         {
             var turma = await _context.Turma.Where(turma => turma.Id == id)
@@ -51,7 +51,7 @@ namespace Backend.Controllers
         }
 
         // PATCH: api/Turma/AtualizarTurma/id
-        [HttpPatch("/AtualizarTurma/{id}")]
+        [HttpPatch("AtualizarTurma/{id}")]
         public async Task<IActionResult> AtualizarTurma(Guid id, PatchTurmaRequest request)
         {
             var turma = await _context.Turma.FindAsync(id);
@@ -83,7 +83,7 @@ namespace Backend.Controllers
         }
 
         // POST: api/Turma/InserirTurma
-        [HttpPost("/InserirTurma")]
+        [HttpPost("InserirTurma")]
         public async Task<ActionResult<Turma>> InserirTurma(PostTurmaRequest request)
         {
             Turma turma = new Turma(
@@ -99,7 +99,7 @@ namespace Backend.Controllers
         }
 
         // PATCH: api/Turma/InserirAlunos/id
-        [HttpPatch("/InserirAlunos")]
+        [HttpPatch("InserirAlunos")]
         public async Task<IActionResult> InserirAlunos(PatchAdicionarAlunosTurmaRequest request)
         {
             var turma = await _context.Turma
@@ -160,7 +160,7 @@ namespace Backend.Controllers
         }
 
         // DELETE: api/Turma/DeletarTurma/id
-        [HttpDelete("/DeletarTurma/{id}")]
+        [HttpDelete("DeletarTurma/{id}")]
         public async Task<IActionResult> DeletarTurma(Guid id)
         {
 

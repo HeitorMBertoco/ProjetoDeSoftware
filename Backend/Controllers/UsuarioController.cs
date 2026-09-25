@@ -26,14 +26,14 @@ namespace Backend.Controllers
         }
 
         // GET: api/Usuario/ListarUsuarios
-        [HttpGet("/ListarUsuarios")]
+        [HttpGet("ListarUsuarios")]
         public async Task<ActionResult<IEnumerable<Usuario>>> ListarUsuarios()
         {
             return await _context.Usuario.ToListAsync();
         }
 
         // GET: api/Usuario/ListarUsuarioPorId/id
-        [HttpGet("/ListarUsuarioPorId/{id}")]
+        [HttpGet("ListarUsuarioPorId/{id}")]
         public async Task<ActionResult<Usuario>> ListarUsuarioPorId(Guid id)
         {
             var usuario = await _context.Usuario.FindAsync(id);
@@ -47,7 +47,7 @@ namespace Backend.Controllers
         }
 
         // PATCH: api/Usuario/AtualizarUsuario/id
-        [HttpPatch("/AtualizarUsuario/{id}")]
+        [HttpPatch("AtualizarUsuario/{id}")]
         public async Task<IActionResult> AtualizarUsuario(Guid id, PatchUsuarioRequest request)
         {
             var usuario = await _context.Usuario.FindAsync(id);
@@ -103,7 +103,7 @@ namespace Backend.Controllers
         }
 
         // PATCH: api/Usuario/AtualizarImagemUsuario/id
-        [HttpPatch("/AtualizarImagemUsuario/{id}")]
+        [HttpPatch("AtualizarImagemUsuario/{id}")]
         public async Task<IActionResult> AtualizarImagemUsuario(Guid id, IFormFile arquivo)
         {
             var usuario = await _context.Usuario.FindAsync(id);
@@ -151,7 +151,7 @@ namespace Backend.Controllers
         }
 
         // POST: api/Usuario/InserirUsuario
-        [HttpPost("/InserirUsuario")]
+        [HttpPost("InserirUsuario")]
         public async Task<ActionResult<Usuario>> InserirUsuario(PostUsuarioRequest request)
         {
             Usuario usuario = Usuario.CriarComSenha(
@@ -168,7 +168,7 @@ namespace Backend.Controllers
         }
 
         // DELETE: api/Usuario/DeletarUsuario/id
-        [HttpDelete("/DeletarUsuario/{id}")]
+        [HttpDelete("DeletarUsuario/{id}")]
         public async Task<IActionResult> DeletarUsuario(Guid id)
         {
             var usuario = await _context.Usuario.FindAsync(id);
