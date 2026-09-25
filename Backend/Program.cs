@@ -19,8 +19,11 @@ using Backend.Dtos.Email;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<BackendContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext")
-    ?? throw new InvalidOperationException("Connection string 'BackendContext' not found.")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("BackendContext")
+        ?? throw new InvalidOperationException("Connection string 'BackendContext' not found."),
+        sqlOptions => sqlOptions.EnableRetryOnFailure()
+    ));
 
 builder.Services.AddCors(options =>
 {
@@ -117,12 +120,9 @@ TypeAdapterConfig<PatchTurmaRequest, Turma>.NewConfig().IgnoreNullValues(true);
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi().AllowAnonymous();
+app.MapOpenApi().AllowAnonymous();
 
-    app.MapScalarApiReference().RequireAuthorization("Public");
-}
+app.MapScalarApiReference().RequireAuthorization("Public");
 
 app.UseCors("FrontEnd");
 

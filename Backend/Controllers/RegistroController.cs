@@ -26,7 +26,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Registro/ListarRegistros
-        [HttpGet("/ListarRegistros")]
+        [HttpGet("ListarRegistros")]
         public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistros()
         {
             return await _context.Registro
@@ -35,7 +35,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Registro/ListarRegistrosPorPagina
-        [HttpGet("/ListarRegistrosPorPagina")]
+        [HttpGet("ListarRegistrosPorPagina")]
         public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistrosPorPagina([FromQuery] int pagina = 1)
         {
             return await _context.Registro
@@ -46,7 +46,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Registro/ListarRegistrosAtivos
-        [HttpGet("/ListarRegistrosAtivos")]
+        [HttpGet("ListarRegistrosAtivos")]
         public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistrosAtivos()
         {
             return await _context.Registro
@@ -56,7 +56,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Registro/ListarRegistrosAtivosPorPagina
-        [HttpGet("/ListarRegistrosAtivosPorPagina")]
+        [HttpGet("ListarRegistrosAtivosPorPagina")]
         public async Task<ActionResult<IEnumerable<Registro>>> ListarRegistrosAtivosPorPagina([FromQuery] int pagina = 1)
         {
             return await _context.Registro
@@ -68,7 +68,7 @@ namespace Backend.Controllers
         }
 
         // GET: api/Registro/ListarRegistroPorId/id
-        [HttpGet("/ListarRegistroPorId/{id}")]
+        [HttpGet("ListarRegistroPorId/{id}")]
         public async Task<ActionResult<Registro>> ListarRegistroPorId(Guid id)
         {
             var registro = await _context.Registro
@@ -84,7 +84,7 @@ namespace Backend.Controllers
         }
 
         // Patch: api/Registro/AtualizarRegistro/id
-        [HttpPatch("/AtualizarRegistro/{id}")]
+        [HttpPatch("AtualizarRegistro/{id}")]
         public async Task<IActionResult> AtualizarRegistro(Guid id, PatchRegistroRequest request)
         {
             var registro = await _context.Registro.FindAsync(id);
@@ -123,7 +123,7 @@ namespace Backend.Controllers
         }
 
         // POST: api/Registro/InserirRegistro
-        [HttpPost("/InserirRegistro")]
+        [HttpPost("InserirRegistro")]
         public async Task<ActionResult<Registro>> InserirRegistro(PostRegistroRequest request)
         {
 
@@ -154,7 +154,7 @@ namespace Backend.Controllers
         }
 
         // DELETE: api/Registro/AlternarEstadoRegistro/id
-        [HttpDelete("/AlternarEstadoRegistro/{id}")]
+        [HttpDelete("AlternarEstadoRegistro/{id}")]
         public async Task<IActionResult> AlternarEstadoRegistro(Guid id)
         {
             var registro = await _context.Registro.FindAsync(id);
