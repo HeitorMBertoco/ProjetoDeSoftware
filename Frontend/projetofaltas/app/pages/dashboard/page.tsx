@@ -7,44 +7,18 @@ import ImagemSenai from "@/assets/SENAI-SP.jpg";
 import Image from "next/image";
 import { Funnel, SearchIcon, X } from "lucide-react";
 import { Text } from "@/Components/ui/Text";
-
-interface Entrada {
-  id: string;
-  nome: string;
-  dataHora: string;
-  entradaSaida: string;
-  motivos: string;
-  turma: string;
-  quemEmitiu: string;
-  quemPermitiu: string;
-}
+import { Form } from "@/Components/form/Form";
+import { FormField } from "@/Components/form/FormField";
+import { Select } from "@/Components/ui/Select";
+import { Label } from "@/Components/ui/Label";
+import { Checkbox } from "@/Components/ui/Checkbox";
+import { Textarea } from "@/Components/ui/Textarea";
+import { Entrada } from "@/lib/types/entradas";
 
 interface Usuario {
   nome: string;
   email: string;
 }
-
-const MOCK_DATA: Entrada[] = Array.from({ length: 50 }, (_, i) => ({
-  id: String(i + 1),
-  nome: [
-    "Carlos Silva",
-    "Ana Souza",
-    "Pedro Lima",
-    "Julia Mendes",
-    "Lucas Rocha",
-  ][i % 5],
-  dataHora: `${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}/05/2025 ${String(8 + (i % 10)).padStart(2, "0")}:${String((i * 7) % 60).padStart(2, "0")}`,
-  entradaSaida: i % 2 === 0 ? "Entrada" : "Saída",
-  motivos: [
-    "Consulta médica",
-    "Visita familiar",
-    "Atividade externa",
-    "Outros",
-  ][i % 4],
-  turma: ["DS-1A", "DS-1B", "DS-2A", "DS-2B"][i % 4],
-  quemEmitiu: ["Prof. João", "Prof. Maria", "Prof. Carlos"][i % 3],
-  quemPermitiu: ["Dir. Amanda", "Coord. Roberto"][i % 2],
-}));
 
 const PAGE_SIZE = 8;
 
@@ -54,6 +28,7 @@ export default function HomeDashboard() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [botao, setBotao] = useState<"red" | "disable">("disable");
   const [botao1, setBotao1] = useState<"red" | "disable">("disable");
+  const [todosRegistros, setTodosRegistros] = useState<Entrada[]>([]);
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -63,6 +38,95 @@ export default function HomeDashboard() {
   const [filtroTurma, setFiltroTurma] = useState("");
   const [showFiltro, setShowFiltro] = useState(false);
   const [modalActive, setModalActive] = useState(false);
+  const [modalStep, setModalStep] = useState<1 | 2>(1);
+
+  const getInitialFormData = () => {
+    const agora = new Date();
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, "0");
+    const dia = String(agora.getDate()).padStart(2, "0");
+    const hora = String(agora.getHours()).padStart(2, "0");
+    const minuto = String(agora.getMinutes()).padStart(2, "0");
+
+    return {
+      nome: "",
+      hora: `${hora}:${minuto}`,
+      data: `${ano}-${mes}-${dia}`,
+      entradaSaida: "Entrada",
+      motivos: "",
+      turma: "",
+      quemEmitiu: "",
+      quemPermitiu: "",
+      quemBuscou: "",
+      telefone: "",
+    };
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData);
+
+  const formatTelefone = (value: string): string => {
+    const apenasNumeros = value.replace(/\D/g, "").slice(0, 11);
+
+    if (apenasNumeros.length === 0) return "";
+    if (apenasNumeros.length <= 2) return `(${apenasNumeros}`;
+    if (apenasNumeros.length <= 6) return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2)}`;
+    if (apenasNumeros.length <= 10) {
+      return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 6)}-${apenasNumeros.slice(6)}`;
+    }
+    return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 7)}-${apenasNumeros.slice(7, 11)}`;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    if (field === "telefone") {
+      setFormData((prev) => ({ ...prev, telefone: formatTelefone(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (modalStep === 1 && formData.entradaSaida === "Saída") {
+      setModalStep(2);
+      return;
+    }
+
+    let dataHoraFormatada = "";
+    if (formData.data && formData.hora) {
+      const [ano, mes, dia] = formData.data.split("-");
+      dataHoraFormatada = `${dia}/${mes}/${ano} ${formData.hora}`;
+    } else if (formData.data) {
+      const [ano, mes, dia] = formData.data.split("-");
+      dataHoraFormatada = `${dia}/${mes}/${ano}`;
+    } else {
+      dataHoraFormatada = new Date().toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    const novoRegistro: Entrada = {
+      id: String(Date.now()),
+      nome: formData.nome,
+      turma: formData.turma || "DS-1A",
+      entradaSaida: formData.entradaSaida as "Entrada" | "Saída",
+      dataHora: dataHoraFormatada,
+      motivos: formData.motivos || "Outros",
+      quemEmitiu: formData.quemEmitiu || "Prof. Sistema",
+      quemPermitiu: formData.quemPermitiu || "Coord. Geral",
+      quemBuscou: formData.quemBuscou,
+      telefone: formData.telefone,
+    };
+
+    setTodosRegistros((prev) => [novoRegistro, ...prev]);
+    setFormData(getInitialFormData());
+    setModalStep(1);
+    setModalActive(false);
+  };
 
   const btStyles = { red: "danger", disable: "ghost" } as const;
   const textStyles = { red: "success", disable: "muted" } as const;
@@ -80,7 +144,7 @@ export default function HomeDashboard() {
 
   useEffect(() => {
     fetchEntradas(currentPage);
-  }, [currentPage]);
+  }, [currentPage, todosRegistros]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -101,9 +165,7 @@ export default function HomeDashboard() {
     setLoading(true);
 
     try {
-      await new Promise((r) => setTimeout(r, 200));
-
-      const filtered = MOCK_DATA.filter((e) => {
+      const filtered = todosRegistros.filter((e) => {
         const matchNome = e.nome
           .toLowerCase()
           .includes(filtroNome.toLowerCase());
@@ -217,29 +279,33 @@ export default function HomeDashboard() {
           </div>
 
           <div className="flex flex-col flex-1 items-center gap-6 pb-4">
-            <div className="flex w-full px-[2vw] gap-5 items-center">
-              <Text variant="h1" weight="bold" align="left">
-                Entradas e Saidas
+            <div className="flex w-full px-[2vw] items-center justify-between gap-4">
+              <Text variant="h1" weight="bold" align="left" className="whitespace-nowrap shrink-0">
+                Entradas e Saídas
               </Text>
 
-              <Button
-                variant="danger"
-                className="gap-1.5 px-4 flex-initial h-9 w-60 ml-[40vw] shadow-sm"
-                onClick={() => setModalActive(true)}
-              >
-                <span className="text-sm mx-4 font-bold text-white leading-none">
-                  Novo Registro
-                </span>
-              </Button>
-
-              <div className="flex items-center gap-2 relative">
+              <div className="flex items-center gap-3">
                 <Button
                   variant="danger"
-                  className="flex items-center justify-center w-9 h-9 p-0 shadow-sm"
-                  onClick={() => setShowFiltro((v) => !v)}
+                  className="gap-1.5 px-4 h-9 shadow-sm whitespace-nowrap"
+                  onClick={() => {
+                    setFormData(getInitialFormData());
+                    setModalActive(true);
+                  }}
                 >
-                  <Funnel size={16} />
+                  <span className="text-sm px-2 font-bold text-white leading-none">
+                    Novo Registro
+                  </span>
                 </Button>
+
+                <div className="flex items-center gap-2 relative">
+                  <Button
+                    variant="danger"
+                    className="flex items-center justify-center w-9 h-9 p-0 shadow-sm"
+                    onClick={() => setShowFiltro((v) => !v)}
+                  >
+                    <Funnel size={16} />
+                  </Button>
 
                 {showFiltro && (
                   <div className="absolute right-0 top-[110%] bg-white border border-zinc-200 rounded-xl shadow-lg p-4 flex flex-col gap-3 z-50 w-55">
@@ -282,6 +348,7 @@ export default function HomeDashboard() {
                 )}
               </div>
             </div>
+          </div>
 
             <div className="w-[70vw] flex flex-col flex-1 overflow-hidden rounded-2xl bg-white shadow-sm">
               <div className="overflow-auto flex-1">
@@ -419,29 +486,244 @@ export default function HomeDashboard() {
         onClick={() => setModalActive(false)}
       >
         <div
-          className={`w-[60vw] h-[80vh] rounded-2xl bg-white p-6 shadow-2xl transition-all duration-170 ease-in-out ${
+          className={`w-[60vw] h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl transition-all duration-170 ease-in-out ${
             modalActive
               ? "opacity-100 scale-100 translate-y-0"
               : "opacity-0 scale-95 translate-y-4"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-100">
             <div>
-              <h2 className="text-xl font-bold text-zinc-900">Novo Registro</h2>
-
-              <p className="text-sm text-zinc-400">
-                Registre uma nova entrada ou saída.
-              </p>
+              <Text variant="h3" color="default" weight="bold">
+                {modalStep === 1 ? "Novo Registro" : "Informações de Saída"}
+              </Text>
+              <Text variant="caption" color="muted">
+                {modalStep === 1
+                  ? "Registre uma nova entrada ou saída de aluno."
+                  : "Informe quem buscou o aluno e o telefone de contato."}
+              </Text>
             </div>
 
             <button
-              onClick={() => setModalActive(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+              onClick={() => {
+                setModalActive(false);
+                setModalStep(1);
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 cursor-pointer"
             >
               <X size={18} />
             </button>
           </div>
+
+          <Form onSubmit={handleFormSubmit} spacing="md">
+            {modalStep === 1 ? (
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                {/* ESQUERDA - 1: NOME */}
+                <FormField
+                  id="nome-aluno"
+                  label="Nome"
+                  placeholder="Ex: Carlos Silva"
+                  required
+                  value={formData.nome}
+                  onChange={(e) => handleInputChange("nome", e.target.value)}
+                />
+
+                {/* DIREITA - 1: MOTIVO */}
+                <div className="row-span-2 flex flex-col gap-2">
+                  <Label htmlFor="motivos" required>
+                    Motivo
+                  </Label>
+                  <Textarea
+                    id="motivos"
+                    rows={4}
+                    placeholder="Digite o motivo..."
+                    className="h-full min-h-27.5"
+                    value={formData.motivos}
+                    onChange={(e) => handleInputChange("motivos", e.target.value)}
+                  />
+                </div>
+
+                {/* ESQUERDA - 2: HORA */}
+                <FormField
+                  id="hora"
+                  type="time"
+                  label="Hora"
+                  required
+                  value={formData.hora}
+                  onChange={(e) => handleInputChange("hora", e.target.value)}
+                />
+
+                {/* ESQUERDA - 3: DATA */}
+                <FormField
+                  id="data"
+                  type="date"
+                  label="Data"
+                  required
+                  value={formData.data}
+                  onChange={(e) => handleInputChange("data", e.target.value)}
+                />
+
+                {/* DIREITA - 2: TURMA */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="turma" required>
+                    Turma
+                  </Label>
+                  <Select
+                    id="turma"
+                    value={formData.turma}
+                    onChange={(e) => handleInputChange("turma", e.target.value)}
+                    placeholder="Selecione a turma"
+                    options={[
+                      { value: "DS-1A", label: "DS-1A" },
+                      { value: "DS-1B", label: "DS-1B" },
+                      { value: "DS-2A", label: "DS-2A" },
+                      { value: "DS-2B", label: "DS-2B" },
+                    ]}
+                  />
+                </div>
+
+                {/* ESQUERDA - 4: ENTRADA / SAÍDA */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="entradaSaida" required>
+                    Entrada / Saída
+                  </Label>
+                  <div className="flex items-center gap-4 pt-1">
+                    <label
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${
+                        formData.entradaSaida === "Entrada"
+                          ? "border-red-500 bg-red-50 text-red-700 font-semibold"
+                          : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="entradaSaida"
+                        value="Entrada"
+                        checked={formData.entradaSaida === "Entrada"}
+                        onChange={() => handleInputChange("entradaSaida", "Entrada")}
+                        className="accent-red-600 w-4 h-4 cursor-pointer"
+                      />
+                      Entrada
+                    </label>
+
+                    <label
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${
+                        formData.entradaSaida === "Saída"
+                          ? "border-red-500 bg-red-50 text-red-700 font-semibold"
+                          : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="entradaSaida"
+                        value="Saída"
+                        checked={formData.entradaSaida === "Saída"}
+                        onChange={() => handleInputChange("entradaSaida", "Saída")}
+                        className="accent-red-600 w-4 h-4 cursor-pointer"
+                      />
+                      Saída
+                    </label>
+                  </div>
+                </div>
+
+                {/* DIREITA - 3: QUEM EMITIU */}
+                <FormField
+                  id="quemEmitiu"
+                  label="Quem emitiu"
+                  placeholder="Ex: Prof. João"
+                  required
+                  value={formData.quemEmitiu}
+                  onChange={(e) => handleInputChange("quemEmitiu", e.target.value)}
+                />
+
+                {/* INPUT LONGO: QUEM PERMITIU */}
+                <div className="col-span-2">
+                  <FormField
+                    id="quemPermitiu"
+                    label="Quem permitiu"
+                    placeholder="Ex: Dir. Amanda"
+                    required
+                    value={formData.quemPermitiu}
+                    onChange={(e) => handleInputChange("quemPermitiu", e.target.value)}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <FormField
+                  id="quemBuscou"
+                  label="Quem buscou"
+                  placeholder="Ex: Maria Souza (Mãe)"
+                  
+                  value={formData.quemBuscou}
+                  onChange={(e) => handleInputChange("quemBuscou", e.target.value)}
+                />
+
+                <FormField
+                  id="telefone"
+                  type="text"
+                  label="Telefone"
+                  placeholder="Ex: (11) 99999-9999"
+                  maxLength={15}
+                  value={formData.telefone}
+                  onChange={(e) => handleInputChange("telefone", e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* BOTÕES */}
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-zinc-100">
+              {modalStep === 1 ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setModalActive(false);
+                      setModalStep(1);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  {formData.entradaSaida === "Saída" ? (
+                    <Button
+                      type="button"
+                      variant="danger"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setModalStep(2);
+                      }}
+                    >
+                      Próximo
+                    </Button>
+                  ) : (
+                    <Button type="submit" variant="danger">
+                      Salvar Registro
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setModalStep(1);
+                    }}
+                  >
+                    Voltar
+                  </Button>
+                  <Button type="submit" variant="danger">
+                    Salvar Registro
+                  </Button>
+                </>
+              )}
+            </div>
+          </Form>
         </div>
       </div>
     </main>
