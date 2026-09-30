@@ -2,10 +2,17 @@ import { notFound } from "next/navigation";
 import { IUsuario, IUsuarioPatch, IUsuarioPost } from "../types/usuario";
 
 const urlBase = "https://apifaltas.runasp.net/api/usuario/";
+const token = ""
 
 export async function ListarUsuarios(): Promise<IUsuario[]> {
     try {
-        const response = await fetch(`${urlBase}ListarUsuarios`);
+        const response = await fetch(`${urlBase}ListarUsuarios`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -22,7 +29,13 @@ export async function ListarUsuarios(): Promise<IUsuario[]> {
 
 export async function ListarUsuarioPorId(id: string): Promise<IUsuario> {
     try {
-        const response = await fetch(`${urlBase}ListarUsuarioPorId/${id}`);
+        const response = await fetch(`${urlBase}ListarUsuarioPorId/${id}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -42,7 +55,8 @@ export async function DeletarUsuario(id: string): Promise<void> {
         const response = await fetch(`${urlBase}DeletarUsuario/${id}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
         });
 
@@ -61,7 +75,8 @@ export async function InserirUsuario(usuario: IUsuarioPost): Promise<void> {
         const response = await fetch(`${urlBase}InserirUsuario`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(usuario)
         });
@@ -80,7 +95,8 @@ export async function AtualizarUsuario(usuario: IUsuarioPatch, id: string): Prom
         const response = await fetch(`${urlBase}AtualizarUsuario/${id}`, {
             method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(usuario)
         });
@@ -101,6 +117,9 @@ export async function AtualizarImagemUsuario(id: string, Imagem: File): Promise<
 
         const response = await fetch(`${urlBase}AtualizarImagemUsuario/${id}`, {
             method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: imagem
         });
 

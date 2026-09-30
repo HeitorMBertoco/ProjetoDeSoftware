@@ -2,10 +2,17 @@ import { notFound } from "next/navigation";
 import { IRegistro, IRegistroPatch, IRegistroPost } from "../types/registro";
 
 const urlBase = "https://apifaltas.runasp.net/api/registro/";
+const token = ""
 
 export async function ListarRegistros(): Promise<IRegistro[]> {
     try {
-        const response = await fetch(`${urlBase}ListarRegistros`);
+        const response = await fetch(`${urlBase}ListarRegistros`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -39,7 +46,13 @@ export async function ListarRegistrosPorPagina(): Promise<IRegistro[]> {
 
 export async function ListarRegistrosAtivos(): Promise<IRegistro[]> {
     try {
-        const response = await fetch(`${urlBase}ListarRegistrosAtivos`);
+        const response = await fetch(`${urlBase}ListarRegistrosAtivos`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -56,7 +69,13 @@ export async function ListarRegistrosAtivos(): Promise<IRegistro[]> {
 
 export async function ListarRegistrosAtivosPorPagina(): Promise<IRegistro[]> {
     try {
-        const response = await fetch(`${urlBase}ListarRegistrosAtivosPorPagina`);
+        const response = await fetch(`${urlBase}ListarRegistrosAtivosPorPagina`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -73,7 +92,13 @@ export async function ListarRegistrosAtivosPorPagina(): Promise<IRegistro[]> {
 
 export async function ListarRegistroPorId(id: string): Promise<IRegistro> {
     try {
-        const response = await fetch(`${urlBase}ListarRegistroPorId/${id}`);
+        const response = await fetch(`${urlBase}ListarRegistroPorId/${id}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -93,7 +118,8 @@ export async function AlternarEstadoRegistro(id: string): Promise<void> {
         const response = await fetch(`${urlBase}AlternarEstadoRegistro/${id}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
         });
 
@@ -112,7 +138,8 @@ export async function InserirRegistro(registro: IRegistroPost): Promise<void> {
         const response = await fetch(`${urlBase}InserirRegistro`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(registro)
         });
@@ -131,7 +158,8 @@ export async function AtualizarRegistro(turma: IRegistroPatch, id: string): Prom
         const response = await fetch(`${urlBase}AtualizarRegistro/${id}`, {
             method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(turma)
         });

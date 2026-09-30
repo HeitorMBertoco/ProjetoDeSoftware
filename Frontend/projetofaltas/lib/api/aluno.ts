@@ -2,16 +2,24 @@ import { notFound } from "next/navigation";
 import { IAluno, IAlunoPatch, IAlunoPost } from "../types/aluno";
 
 const urlBase = "https://apifaltas.runasp.net/api/aluno/";
+const token = ""
 
 export async function ListarAlunos(): Promise<IAluno[]> {
     try {
-        const response = await fetch(`${urlBase}ListarAlunos`);
+        const response = await fetch(`${urlBase}ListarAlunos`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
         }
 
         const data: IAluno[] = await response.json();
+        console.log(data)
         return data;
 
     } catch (error) {
@@ -22,7 +30,13 @@ export async function ListarAlunos(): Promise<IAluno[]> {
 
 export async function ListarAlunosComFaltas(): Promise<IAluno[]> {
     try {
-        const response = await fetch(`${urlBase}ListarAlunosComFaltas`);
+        const response = await fetch(`${urlBase}ListarAlunosComFaltas`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -39,7 +53,13 @@ export async function ListarAlunosComFaltas(): Promise<IAluno[]> {
 
 export async function ListarAlunosComFaltasExcessivas(): Promise<IAluno[]> {
     try {
-        const response = await fetch(`${urlBase}ListarAlunosComFaltasExcessivas`);
+        const response = await fetch(`${urlBase}ListarAlunosComFaltasExcessivas`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -56,7 +76,13 @@ export async function ListarAlunosComFaltasExcessivas(): Promise<IAluno[]> {
 
 export async function ListarAlunosPorNome(nome: string): Promise<IAluno[]> {
     try {
-        const response = await fetch(`${urlBase}ListarAlunosPorNome/${nome}`);
+        const response = await fetch(`${urlBase}ListarAlunosPorNome/${nome}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -73,7 +99,13 @@ export async function ListarAlunosPorNome(nome: string): Promise<IAluno[]> {
 
 export async function ListarAlunoPorId(id: string): Promise<IAluno> {
     try {
-        const response = await fetch(`${urlBase}ListarAlunoPorId/${id}`);
+        const response = await fetch(`${urlBase}ListarAlunoPorId/${id}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -94,13 +126,14 @@ export async function DeletarAluno(id: string): Promise<void> {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
         });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
         }
-    
+
 
     } catch (error) {
         console.error('Falha ao excluir aluno:', error);
@@ -113,6 +146,7 @@ export async function InserirAluno(aluno: IAlunoPost): Promise<void> {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(aluno)
         });
@@ -132,6 +166,7 @@ export async function AtualizarAluno(aluno: IAlunoPatch, id: string): Promise<vo
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(aluno)
         });

@@ -2,10 +2,17 @@ import { notFound } from "next/navigation";
 import { IInserirAlunos, ITurma, ITurmaPatch, ITurmaPost } from "../types/turma";
 
 const urlBase = "https://apifaltas.runasp.net/api/turma/";
+const token = ""
 
 export async function ListarTurmas(): Promise<ITurma[]> {
     try {
-        const response = await fetch(`${urlBase}ListarTurmas`);
+        const response = await fetch(`${urlBase}ListarTurmas`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -22,7 +29,13 @@ export async function ListarTurmas(): Promise<ITurma[]> {
 
 export async function ListarTurmaPorId(id: string): Promise<ITurma> {
     try {
-        const response = await fetch(`${urlBase}ListarTurmaPorId/${id}`);
+        const response = await fetch(`${urlBase}ListarTurmaPorId/${id}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
@@ -42,7 +55,8 @@ export async function DeletarTurma(id: string): Promise<void> {
         const response = await fetch(`${urlBase}DeletarTurma/${id}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
         });
 
@@ -61,7 +75,8 @@ export async function InserirTurma(turma: ITurmaPost): Promise<void> {
         const response = await fetch(`${urlBase}InserirTurma`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(turma)
         });
@@ -80,7 +95,8 @@ export async function AtualizarTurma(turma: ITurmaPatch, id: string): Promise<vo
         const response = await fetch(`${urlBase}AtualizarTurma/${id}`, {
             method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(turma)
         });
@@ -99,7 +115,8 @@ export async function InserirAlunos(alunos: IInserirAlunos, id: string): Promise
         const response = await fetch(`${urlBase}InserirAlunos/${id}`, {
             method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(alunos)
         });
