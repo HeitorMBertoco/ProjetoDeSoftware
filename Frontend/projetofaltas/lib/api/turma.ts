@@ -1,17 +1,14 @@
 import { notFound } from "next/navigation";
 import { IInserirAlunos, ITurma, ITurmaPatch, ITurmaPost } from "../types/turma";
+import { getAuthHeaders } from "./client";
 
 const urlBase = "https://apifaltas.runasp.net/api/turma/";
-const token = ""
 
 export async function ListarTurmas(): Promise<ITurma[]> {
     try {
         const response = await fetch(`${urlBase}ListarTurmas`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -31,10 +28,7 @@ export async function ListarTurmaPorId(id: string): Promise<ITurma> {
     try {
         const response = await fetch(`${urlBase}ListarTurmaPorId/${id}`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -54,19 +48,16 @@ export async function DeletarTurma(id: string): Promise<void> {
     try {
         const response = await fetch(`${urlBase}DeletarTurma/${id}`, {
             method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
         }
-    
 
     } catch (error) {
         console.error('Falha ao excluir turma:', error);
+        throw error;
     }
 }
 
@@ -74,10 +65,7 @@ export async function InserirTurma(turma: ITurmaPost): Promise<void> {
     try {
         const response = await fetch(`${urlBase}InserirTurma`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(turma)
         });
 
@@ -87,6 +75,7 @@ export async function InserirTurma(turma: ITurmaPost): Promise<void> {
 
     } catch (error) {
         console.error('Falha ao inserir turma:', error);
+        throw error;
     }
 }
 
@@ -94,10 +83,7 @@ export async function AtualizarTurma(turma: ITurmaPatch, id: string): Promise<vo
     try {
         const response = await fetch(`${urlBase}AtualizarTurma/${id}`, {
             method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(turma)
         });
 
@@ -107,6 +93,7 @@ export async function AtualizarTurma(turma: ITurmaPatch, id: string): Promise<vo
 
     } catch (error) {
         console.error('Falha ao atualizar turma:', error);
+        throw error;
     }
 }
 
@@ -114,10 +101,7 @@ export async function InserirAlunos(alunos: IInserirAlunos, id: string): Promise
     try {
         const response = await fetch(`${urlBase}InserirAlunos/${id}`, {
             method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(alunos)
         });
 
@@ -127,5 +111,6 @@ export async function InserirAlunos(alunos: IInserirAlunos, id: string): Promise
 
     } catch (error) {
         console.error('Falha ao inserir alunos na turma:', error);
+        throw error;
     }
 }

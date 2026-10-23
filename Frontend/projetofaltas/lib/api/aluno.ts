@@ -1,17 +1,14 @@
 import { notFound } from "next/navigation";
 import { IAluno, IAlunoPatch, IAlunoPost } from "../types/aluno";
+import { getAuthHeaders } from "./client";
 
 const urlBase = "https://apifaltas.runasp.net/api/aluno/";
-const token = ""
 
 export async function ListarAlunos(): Promise<IAluno[]> {
     try {
         const response = await fetch(`${urlBase}ListarAlunos`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -19,7 +16,6 @@ export async function ListarAlunos(): Promise<IAluno[]> {
         }
 
         const data: IAluno[] = await response.json();
-        console.log(data)
         return data;
 
     } catch (error) {
@@ -32,10 +28,7 @@ export async function ListarAlunosComFaltas(): Promise<IAluno[]> {
     try {
         const response = await fetch(`${urlBase}ListarAlunosComFaltas`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -55,10 +48,7 @@ export async function ListarAlunosComFaltasExcessivas(): Promise<IAluno[]> {
     try {
         const response = await fetch(`${urlBase}ListarAlunosComFaltasExcessivas`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -78,10 +68,7 @@ export async function ListarAlunosPorNome(nome: string): Promise<IAluno[]> {
     try {
         const response = await fetch(`${urlBase}ListarAlunosPorNome/${nome}`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -101,10 +88,7 @@ export async function ListarAlunoPorId(id: string): Promise<IAluno> {
     try {
         const response = await fetch(`${urlBase}ListarAlunoPorId/${id}`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
@@ -124,19 +108,16 @@ export async function DeletarAluno(id: string): Promise<void> {
     try {
         const response = await fetch(`${urlBase}DeletarAluno/${id}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: getAuthHeaders()
         });
 
         if (!response.ok) {
             throw new Error(`Erro: ${response.status} ${response.statusText}`);
         }
 
-
     } catch (error) {
         console.error('Falha ao excluir aluno:', error);
+        throw error;
     }
 }
 
@@ -144,10 +125,7 @@ export async function InserirAluno(aluno: IAlunoPost): Promise<void> {
     try {
         const response = await fetch(`${urlBase}InserirAluno`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(aluno)
         });
 
@@ -157,6 +135,7 @@ export async function InserirAluno(aluno: IAlunoPost): Promise<void> {
 
     } catch (error) {
         console.error('Falha ao inserir aluno:', error);
+        throw error;
     }
 }
 
@@ -164,10 +143,7 @@ export async function AtualizarAluno(aluno: IAlunoPatch, id: string): Promise<vo
     try {
         const response = await fetch(`${urlBase}AtualizarAluno/${id}`, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(aluno)
         });
 
@@ -177,5 +153,6 @@ export async function AtualizarAluno(aluno: IAlunoPatch, id: string): Promise<vo
 
     } catch (error) {
         console.error('Falha ao atualizar aluno:', error);
+        throw error;
     }
 }

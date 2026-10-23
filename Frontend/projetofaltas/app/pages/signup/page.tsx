@@ -18,7 +18,10 @@ export default function MyForm() {
   const { values, errors, handleChange, handleSubmit } = useForm({
     initialValues: { email: "" },
     validate: (v) => ({ email: !v.email ? "Obrigatório" : "" }),
-    onSubmit: async (data) => {},
+    onSubmit: async (data) => {
+
+      
+    },
   });
 
   {

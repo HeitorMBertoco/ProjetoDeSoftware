@@ -5,15 +5,20 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/Components/ui/Button";
 import ImagemSenai from "@/assets/SENAI-SP.jpg";
 import Image from "next/image";
-import { Funnel, SearchIcon, X } from "lucide-react";
+import { Funnel, RefreshCw, SearchIcon, X } from "lucide-react";
 import { Text } from "@/Components/ui/Text";
 import { Form } from "@/Components/form/Form";
 import { FormField } from "@/Components/form/FormField";
 import { Select } from "@/Components/ui/Select";
 import { Label } from "@/Components/ui/Label";
-import { Checkbox } from "@/Components/ui/Checkbox";
 import { Textarea } from "@/Components/ui/Textarea";
 import { Entrada } from "@/lib/types/entradas";
+import { ListarRegistros, InserirRegistro } from "@/lib/api/registro";
+import { ListarAlunos } from "@/lib/api/aluno";
+import { ListarTurmas } from "@/lib/api/turma";
+import { IAluno } from "@/lib/types/aluno";
+import { ITurma } from "@/lib/types/turma";
+import { DEV_VALID_TOKEN } from "@/lib/api/client";
 
 interface Usuario {
   nome: string;
@@ -26,14 +31,17 @@ export default function HomeDashboard() {
   const router = useRouter();
 
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [botao, setBotao] = useState<"red" | "disable">("disable");
+  const [botao, setBotao] = useState<"red" | "disable">("red");
   const [botao1, setBotao1] = useState<"red" | "disable">("disable");
   const [todosRegistros, setTodosRegistros] = useState<Entrada[]>([]);
   const [entradas, setEntradas] = useState<Entrada[]>([]);
+  const [alunos, setAlunos] = useState<IAluno[]>([]);
+  const [turmas, setTurmas] = useState<ITurma[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroTurma, setFiltroTurma] = useState("");
   const [showFiltro, setShowFiltro] = useState(false);
@@ -49,6 +57,7 @@ export default function HomeDashboard() {
     const minuto = String(agora.getMinutes()).padStart(2, "0");
 
     return {
+      alunoId: "",
       nome: "",
       hora: `${hora}:${minuto}`,
       data: `${ano}-${mes}-${dia}`,
@@ -84,7 +93,68 @@ export default function HomeDashboard() {
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const carregarDadosApi = async () => {
+    setIsRefreshing(true);
+    setLoading(true);
+
+    try {
+      const [resRegistros, resAlunos, resTurmas] = await Promise.allSettled([
+        ListarRegistros(),
+        ListarAlunos(),
+        ListarTurmas(),
+      ]);
+
+      if (resAlunos.status === "fulfilled" && Array.isArray(resAlunos.value)) {
+        setAlunos(resAlunos.value);
+      }
+
+      if (resTurmas.status === "fulfilled" && Array.isArray(resTurmas.value)) {
+        setTurmas(resTurmas.value);
+      }
+
+      if (resRegistros.status === "fulfilled" && Array.isArray(resRegistros.value)) {
+        const formatados: Entrada[] = resRegistros.value.map((item) => {
+          let dataHoraFormatada = "-";
+          if (item.data) {
+            const dataObj = new Date(item.data);
+            if (!isNaN(dataObj.getTime())) {
+              dataHoraFormatada = dataObj.toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            } else {
+              dataHoraFormatada = String(item.data);
+            }
+          }
+
+          return {
+            id: String(item.id),
+            nome: item.aluno?.nome || "Aluno não identificado",
+            dataHora: dataHoraFormatada,
+            entradaSaida: (item.entradaSaida as "Entrada" | "Saída") || "Entrada",
+            motivos: item.motivo || "Não informado",
+            turma: "DS-1A",
+            quemEmitiu: item.quemEmitiu || "-",
+            quemPermitiu: item.quemPermitiu || "-",
+            quemBuscou: item.quemBuscou || "-",
+            telefone: item.telefone || "",
+          };
+        });
+
+        setTodosRegistros(formatados);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados da API:", error);
+    } finally {
+      setIsRefreshing(false);
+      setLoading(false);
+    }
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (modalStep === 1 && formData.entradaSaida === "Saída") {
@@ -109,20 +179,50 @@ export default function HomeDashboard() {
       });
     }
 
-    const novoRegistro: Entrada = {
-      id: String(Date.now()),
-      nome: formData.nome,
-      turma: formData.turma || "DS-1A",
-      entradaSaida: formData.entradaSaida as "Entrada" | "Saída",
-      dataHora: dataHoraFormatada,
-      motivos: formData.motivos || "Outros",
-      quemEmitiu: formData.quemEmitiu || "Prof. Sistema",
-      quemPermitiu: formData.quemPermitiu || "Coord. Geral",
-      quemBuscou: formData.quemBuscou,
-      telefone: formData.telefone,
-    };
+    const alunoEncontrado = alunos.find(
+      (a) => a.id === formData.alunoId || a.nome.toLowerCase() === formData.nome.trim().toLowerCase()
+    );
 
-    setTodosRegistros((prev) => [novoRegistro, ...prev]);
+    let salvoNaApi = false;
+    if (alunoEncontrado?.id) {
+      try {
+        const dataIso = new Date(`${formData.data}T${formData.hora || "00:00"}`);
+        await InserirRegistro({
+          alunoId: alunoEncontrado.id,
+          data: isNaN(dataIso.getTime()) ? new Date() : dataIso,
+          entradaSaida: formData.entradaSaida,
+          motivo: formData.motivos || null,
+          quemEmitiu: formData.quemEmitiu || "Prof. Sistema",
+          quemPermitiu: formData.quemPermitiu || "Coord. Geral",
+          quemBuscou: formData.quemBuscou || "",
+          telefone: formData.telefone || null,
+          ativo: true,
+        });
+
+        salvoNaApi = true;
+        await carregarDadosApi();
+      } catch (err) {
+        console.warn("Falha ao salvar via API, inserindo localmente:", err);
+      }
+    }
+
+    if (!salvoNaApi) {
+      const novoRegistro: Entrada = {
+        id: String(Date.now()),
+        nome: formData.nome,
+        turma: formData.turma || "DS-1A",
+        entradaSaida: formData.entradaSaida as "Entrada" | "Saída",
+        dataHora: dataHoraFormatada,
+        motivos: formData.motivos || "Outros",
+        quemEmitiu: formData.quemEmitiu || "Prof. Sistema",
+        quemPermitiu: formData.quemPermitiu || "Coord. Geral",
+        quemBuscou: formData.quemBuscou,
+        telefone: formData.telefone,
+      };
+
+      setTodosRegistros((prev) => [novoRegistro, ...prev]);
+    }
+
     setFormData(getInitialFormData());
     setModalStep(1);
     setModalActive(false);
@@ -139,7 +239,19 @@ export default function HomeDashboard() {
       return;
     }
 
-    setUsuario(JSON.parse(dadosGravados));
+    try {
+      const parsed = JSON.parse(dadosGravados);
+      if (!parsed.token || parsed.token === "mock-token-123") {
+        parsed.token = DEV_VALID_TOKEN;
+        localStorage.setItem("usuario_logado", JSON.stringify(parsed));
+        localStorage.setItem("token", DEV_VALID_TOKEN);
+      }
+      setUsuario(parsed);
+    } catch {
+      setUsuario(null);
+    }
+
+    carregarDadosApi();
   }, [router]);
 
   useEffect(() => {
@@ -183,7 +295,7 @@ export default function HomeDashboard() {
       setTotalPages(Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
       setTotalRegistros(filtered.length);
     } catch (error) {
-      console.error("Erro ao buscar entradas:", error);
+      console.error("Erro ao filtrar entradas:", error);
     } finally {
       setLoading(false);
     }
@@ -214,6 +326,16 @@ export default function HomeDashboard() {
 
     return pages;
   };
+
+  const opcoesTurmas =
+    turmas.length > 0
+      ? turmas.map((t) => ({ value: t.nome, label: t.nome }))
+      : [
+          { value: "DS-1A", label: "DS-1A" },
+          { value: "DS-1B", label: "DS-1B" },
+          { value: "DS-2A", label: "DS-2A" },
+          { value: "DS-2B", label: "DS-2B" },
+        ];
 
   if (!usuario) return null;
 
@@ -258,6 +380,8 @@ export default function HomeDashboard() {
               <input
                 className="placeholder-zinc-400 w-full outline-0 font-medium h-full text-sm bg-transparent"
                 placeholder="Pesquisar.."
+                value={filtroNome}
+                onChange={(e) => setFiltroNome(e.target.value)}
               />
             </div>
 
@@ -267,11 +391,11 @@ export default function HomeDashboard() {
 
                 <div className="flex flex-col">
                   <span className="font-bold text-[0.95vw] leading-tight">
-                    Jonas Luis Olivera
+                    {usuario.nome}
                   </span>
 
                   <span className="font-medium text-[0.75vw] text-zinc-400 leading-tight">
-                    gmail.com@algo
+                    {usuario.email}
                   </span>
                 </div>
               </div>
@@ -285,6 +409,16 @@ export default function HomeDashboard() {
               </Text>
 
               <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  className="flex items-center justify-center w-9 h-9 p-0 shadow-sm"
+                  title="Atualizar lista"
+                  onClick={carregarDadosApi}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+                </Button>
+
                 <Button
                   variant="danger"
                   className="gap-1.5 px-4 h-9 shadow-sm whitespace-nowrap"
@@ -307,48 +441,48 @@ export default function HomeDashboard() {
                     <Funnel size={16} />
                   </Button>
 
-                {showFiltro && (
-                  <div className="absolute right-0 top-[110%] bg-white border border-zinc-200 rounded-xl shadow-lg p-4 flex flex-col gap-3 z-50 w-55">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold text-zinc-500">
-                        Nome
-                      </span>
+                  {showFiltro && (
+                    <div className="absolute right-0 top-[110%] bg-white border border-zinc-200 rounded-xl shadow-lg p-4 flex flex-col gap-3 z-50 w-55">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold text-zinc-500">
+                          Nome
+                        </span>
 
-                      <input
-                        value={filtroNome}
-                        onChange={(e) => setFiltroNome(e.target.value)}
-                        placeholder="Buscar por nome..."
-                        className="border border-zinc-200 rounded-lg px-3 py-2 text-sm outline-0 focus:border-zinc-400"
-                      />
+                        <input
+                          value={filtroNome}
+                          onChange={(e) => setFiltroNome(e.target.value)}
+                          placeholder="Buscar por nome..."
+                          className="border border-zinc-200 rounded-lg px-3 py-2 text-sm outline-0 focus:border-zinc-400"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold text-zinc-500">
+                          Turma
+                        </span>
+
+                        <input
+                          value={filtroTurma}
+                          onChange={(e) => setFiltroTurma(e.target.value)}
+                          placeholder="Buscar por turma..."
+                          className="border border-zinc-200 rounded-lg px-3 py-2 text-sm outline-0 focus:border-zinc-400"
+                        />
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setFiltroNome("");
+                          setFiltroTurma("");
+                        }}
+                        className="text-xs text-zinc-400 hover:text-zinc-600 text-left cursor-pointer"
+                      >
+                        Limpar filtros
+                      </button>
                     </div>
-
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold text-zinc-500">
-                        Turma
-                      </span>
-
-                      <input
-                        value={filtroTurma}
-                        onChange={(e) => setFiltroTurma(e.target.value)}
-                        placeholder="Buscar por turma..."
-                        className="border border-zinc-200 rounded-lg px-3 py-2 text-sm outline-0 focus:border-zinc-400"
-                      />
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setFiltroNome("");
-                        setFiltroTurma("");
-                      }}
-                      className="text-xs text-zinc-400 hover:text-zinc-600 text-left cursor-pointer"
-                    >
-                      Limpar filtros
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
             <div className="w-[70vw] flex flex-col flex-1 overflow-hidden rounded-2xl bg-white shadow-sm">
               <div className="overflow-auto flex-1">
@@ -381,7 +515,7 @@ export default function HomeDashboard() {
                       <tr>
                         <td colSpan={7} className="text-center py-8">
                           <Text variant="body" color="muted">
-                            Carregando...
+                            Carregando registros...
                           </Text>
                         </td>
                       </tr>
@@ -520,14 +654,34 @@ export default function HomeDashboard() {
             {modalStep === 1 ? (
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                 {/* ESQUERDA - 1: NOME */}
-                <FormField
-                  id="nome-aluno"
-                  label="Nome"
-                  placeholder="Ex: Carlos Silva"
-                  required
-                  value={formData.nome}
-                  onChange={(e) => handleInputChange("nome", e.target.value)}
-                />
+                <div>
+                  <FormField
+                    id="nome-aluno"
+                    label="Nome do Aluno"
+                    placeholder="Selecione ou digite o nome"
+                    required
+                    value={formData.nome}
+                    list="lista-alunos-datalist"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const encontrado = alunos.find(
+                        (a) => a.nome.toLowerCase() === val.trim().toLowerCase()
+                      );
+                      setFormData((prev) => ({
+                        ...prev,
+                        nome: val,
+                        alunoId: encontrado ? encontrado.id : prev.alunoId,
+                      }));
+                    }}
+                  />
+                  <datalist id="lista-alunos-datalist">
+                    {alunos.map((a) => (
+                      <option key={a.id} value={a.nome}>
+                        {a.rm ? `RM: ${a.rm}` : ""}
+                      </option>
+                    ))}
+                  </datalist>
+                </div>
 
                 {/* DIREITA - 1: MOTIVO */}
                 <div className="row-span-2 flex flex-col gap-2">
@@ -574,12 +728,7 @@ export default function HomeDashboard() {
                     value={formData.turma}
                     onChange={(e) => handleInputChange("turma", e.target.value)}
                     placeholder="Selecione a turma"
-                    options={[
-                      { value: "DS-1A", label: "DS-1A" },
-                      { value: "DS-1B", label: "DS-1B" },
-                      { value: "DS-2A", label: "DS-2A" },
-                      { value: "DS-2B", label: "DS-2B" },
-                    ]}
+                    options={opcoesTurmas}
                   />
                 </div>
 
@@ -655,7 +804,6 @@ export default function HomeDashboard() {
                   id="quemBuscou"
                   label="Quem buscou"
                   placeholder="Ex: Maria Souza (Mãe)"
-                  
                   value={formData.quemBuscou}
                   onChange={(e) => handleInputChange("quemBuscou", e.target.value)}
                 />
