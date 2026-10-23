@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/Components/ui/Input';
-import { DEV_VALID_TOKEN } from '@/lib/api/client';
 import "./globals.css";
 
 export default function Home() {
@@ -11,53 +10,53 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErro('');
 
     try {
-      // Tenta autenticar no endpoint real do backend
       const res = await fetch('https://apifaltas.runasp.net/api/Auth/Login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ login: email, senha: password }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const tokenRecebido = data.token || DEV_VALID_TOKEN;
-
-        localStorage.setItem(
-          'usuario_logado',
-          JSON.stringify({
-            id: 1,
-            nome: email.split('@')[0] || 'Usuário SENAI',
-            email: email,
-            token: tokenRecebido,
-          })
-        );
-        localStorage.setItem('token', tokenRecebido);
-        router.push('/pages/dashboard/');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setErro(errorData.mensagem || 'Credenciais inválidas.');
+        setLoading(false);
         return;
       }
-    } catch (err) {
-      console.warn('Login na API não respondeu, usando sessão autorizada de desenvolvimento:', err);
-    }
 
-    // Fallback de desenvolvimento: salva o token JWT válido assinado pelo backend
-    const tokenValido = DEV_VALID_TOKEN;
-    localStorage.setItem(
-      'usuario_logado',
-      JSON.stringify({
-        id: 1,
-        nome: email ? email.split('@')[0] : 'Usuário SENAI',
-        email: email || 'teste@senai.com',
-        token: tokenValido,
-      })
-    );
-    localStorage.setItem('token', tokenValido);
-    router.push('/pages/dashboard/');
+      const data = await res.json();
+      const token = data.token;
+
+      if (!token) {
+        setErro('Token não retornado pelo servidor.');
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem(
+        'usuario_logado',
+        JSON.stringify({
+          id: 1,
+          nome: email.split('@')[0] || 'Usuário',
+          email: email,
+          token: token,
+        })
+      );
+      localStorage.setItem('token', token);
+      router.push('/pages/dashboard/');
+    } catch (err) {
+      console.error('Erro ao conectar ao servidor:', err);
+      setErro('Falha na comunicação com o servidor.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,8 +66,14 @@ export default function Home() {
         <h1 className="card-title">Bem vindo de volta!</h1>
 
         <form className="form" onSubmit={handleLogin}>
+          {erro && (
+            <div className="bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg p-2.5 mb-2 text-center font-medium">
+              {erro}
+            </div>
+          )}
+
           <div className="form-field">
-            <label className="emailLabel" htmlFor="email">Email</label>
+            <label className="emailLabel" htmlFor="email">Email / Login</label>
             <Input
               id="email"
               type="text"

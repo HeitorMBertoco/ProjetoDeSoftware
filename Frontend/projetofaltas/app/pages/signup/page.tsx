@@ -16,11 +16,11 @@ import { Text } from "@/Components/ui/Text";
 export default function MyForm() {
   const router = useRouter();
   const { values, errors, handleChange, handleSubmit } = useForm({
-    initialValues: { email: "" },
+    initialValues: { email: "", senha: "" },
     validate: (v) => ({ email: !v.email ? "Obrigatório" : "" }),
     onSubmit: async (data) => {
+       
 
-      
     },
   });
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/Components/ui/Button";
 import ImagemSenai from "@/assets/SENAI-SP.jpg";
 import Image from "next/image";
-import { Funnel, RefreshCw, SearchIcon, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Funnel, RefreshCw, SearchIcon, X } from "lucide-react";
 import { Text } from "@/Components/ui/Text";
 import { Form } from "@/Components/form/Form";
 import { FormField } from "@/Components/form/FormField";
@@ -13,16 +13,17 @@ import { Select } from "@/Components/ui/Select";
 import { Label } from "@/Components/ui/Label";
 import { Textarea } from "@/Components/ui/Textarea";
 import { Entrada } from "@/lib/types/entradas";
-import { ListarRegistros, InserirRegistro } from "@/lib/api/registro";
+import { ListarRegistros, InserirRegistro, ListarRegistrosPorPagina } from "@/lib/api/registro";
 import { ListarAlunos } from "@/lib/api/aluno";
 import { ListarTurmas } from "@/lib/api/turma";
 import { IAluno } from "@/lib/types/aluno";
 import { ITurma } from "@/lib/types/turma";
-import { DEV_VALID_TOKEN } from "@/lib/api/client";
+import { IRegistro } from "@/lib/types/registro";
 
 interface Usuario {
   nome: string;
   email: string;
+  token?: string;
 }
 
 const PAGE_SIZE = 8;
@@ -34,12 +35,9 @@ export default function HomeDashboard() {
   const [botao, setBotao] = useState<"red" | "disable">("red");
   const [botao1, setBotao1] = useState<"red" | "disable">("disable");
   const [todosRegistros, setTodosRegistros] = useState<Entrada[]>([]);
-  const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [alunos, setAlunos] = useState<IAluno[]>([]);
   const [turmas, setTurmas] = useState<ITurma[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalRegistros, setTotalRegistros] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filtroNome, setFiltroNome] = useState("");
@@ -93,57 +91,72 @@ export default function HomeDashboard() {
     }
   };
 
+  const encontrarTurma = (alunoId?: string, turmasLista: ITurma[] = turmas): string => {
+    if (!alunoId) return "-";
+    const turmaEncontrada = turmasLista.find((t) =>
+      t.listaAlunos?.some((a) => a.id === alunoId)
+    );
+    return turmaEncontrada?.nome || "-";
+  };
+
+  const formatarRegistros = (lista: IRegistro[], turmasLista: ITurma[] = turmas): Entrada[] => {
+    return lista.map((item) => {
+      let dataHoraFormatada = "-";
+      if (item.data) {
+        const dataObj = new Date(item.data);
+        if (!isNaN(dataObj.getTime())) {
+          dataHoraFormatada = dataObj.toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        } else {
+          dataHoraFormatada = String(item.data);
+        }
+      }
+
+      return {
+        id: String(item.id),
+        nome: item.aluno?.nome || "Aluno não identificado",
+        dataHora: dataHoraFormatada,
+        entradaSaida: (item.entradaSaida as "Entrada" | "Saída") || "Entrada",
+        motivos: item.motivo || "Não informado",
+        turma: encontrarTurma(item.alunoId, turmasLista),
+        quemEmitiu: item.quemEmitiu || "-",
+        quemPermitiu: item.quemPermitiu || "-",
+        quemBuscou: item.quemBuscou || "-",
+        telefone: item.telefone || "",
+      };
+    });
+  };
+
   const carregarDadosApi = async () => {
     setIsRefreshing(true);
     setLoading(true);
+    var result = await ListarRegistros()
+    result = result.reverse()
 
     try {
       const [resRegistros, resAlunos, resTurmas] = await Promise.allSettled([
-        ListarRegistros(),
+        result,
         ListarAlunos(),
         ListarTurmas(),
       ]);
+
+      let turmasCarregadas: ITurma[] = [];
+      if (resTurmas.status === "fulfilled" && Array.isArray(resTurmas.value)) {
+        turmasCarregadas = resTurmas.value;
+        setTurmas(turmasCarregadas);
+      }
 
       if (resAlunos.status === "fulfilled" && Array.isArray(resAlunos.value)) {
         setAlunos(resAlunos.value);
       }
 
-      if (resTurmas.status === "fulfilled" && Array.isArray(resTurmas.value)) {
-        setTurmas(resTurmas.value);
-      }
-
       if (resRegistros.status === "fulfilled" && Array.isArray(resRegistros.value)) {
-        const formatados: Entrada[] = resRegistros.value.map((item) => {
-          let dataHoraFormatada = "-";
-          if (item.data) {
-            const dataObj = new Date(item.data);
-            if (!isNaN(dataObj.getTime())) {
-              dataHoraFormatada = dataObj.toLocaleString("pt-BR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-            } else {
-              dataHoraFormatada = String(item.data);
-            }
-          }
-
-          return {
-            id: String(item.id),
-            nome: item.aluno?.nome || "Aluno não identificado",
-            dataHora: dataHoraFormatada,
-            entradaSaida: (item.entradaSaida as "Entrada" | "Saída") || "Entrada",
-            motivos: item.motivo || "Não informado",
-            turma: "DS-1A",
-            quemEmitiu: item.quemEmitiu || "-",
-            quemPermitiu: item.quemPermitiu || "-",
-            quemBuscou: item.quemBuscou || "-",
-            telefone: item.telefone || "",
-          };
-        });
-
+        const formatados = formatarRegistros(resRegistros.value, turmasCarregadas);
         setTodosRegistros(formatados);
       }
     } catch (error) {
@@ -151,6 +164,37 @@ export default function HomeDashboard() {
     } finally {
       setIsRefreshing(false);
       setLoading(false);
+    }
+  };
+
+
+    const registrosFiltrados = useMemo(() => {
+    const nomeFiltro = filtroNome.trim().toLowerCase();
+    const turmaFiltro = filtroTurma.trim().toLowerCase();
+
+    return todosRegistros.filter((e) => {
+      const matchNome = !nomeFiltro || (e.nome || "").toLowerCase().includes(nomeFiltro);
+      const matchTurma = !turmaFiltro || (e.turma || "").toLowerCase().includes(turmaFiltro);
+      return matchNome && matchTurma;
+    });
+  }, [todosRegistros, filtroNome, filtroTurma]);
+
+  // Total de itens e total de páginas calculados dinamicamente
+  const totalRegistros = registrosFiltrados.length;
+  const totalPages = Math.max(1, Math.ceil(totalRegistros / PAGE_SIZE));
+
+  // Garante que a página atual seja sempre válida
+  const paginaAtual = Math.min(Math.max(1, currentPage), totalPages);
+
+  // Fatiamento imediato para a página atual (sem lag e sem desincronia de estado)
+  const entradas = useMemo(() => {
+    const start = (paginaAtual - 1) * PAGE_SIZE;
+    return registrosFiltrados.slice(start, start + PAGE_SIZE);
+  }, [registrosFiltrados, paginaAtual]);
+
+  const mudarPagina = (novaPagina: number) => {
+    if (novaPagina >= 1 && novaPagina <= totalPages) {
+      setCurrentPage(novaPagina);
     }
   };
 
@@ -162,70 +206,40 @@ export default function HomeDashboard() {
       return;
     }
 
-    let dataHoraFormatada = "";
-    if (formData.data && formData.hora) {
-      const [ano, mes, dia] = formData.data.split("-");
-      dataHoraFormatada = `${dia}/${mes}/${ano} ${formData.hora}`;
-    } else if (formData.data) {
-      const [ano, mes, dia] = formData.data.split("-");
-      dataHoraFormatada = `${dia}/${mes}/${ano}`;
-    } else {
-      dataHoraFormatada = new Date().toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    }
-
     const alunoEncontrado = alunos.find(
       (a) => a.id === formData.alunoId || a.nome.toLowerCase() === formData.nome.trim().toLowerCase()
     );
 
-    let salvoNaApi = false;
-    if (alunoEncontrado?.id) {
-      try {
-        const dataIso = new Date(`${formData.data}T${formData.hora || "00:00"}`);
-        await InserirRegistro({
-          alunoId: alunoEncontrado.id,
-          data: isNaN(dataIso.getTime()) ? new Date() : dataIso,
-          entradaSaida: formData.entradaSaida,
-          motivo: formData.motivos || null,
-          quemEmitiu: formData.quemEmitiu || "Prof. Sistema",
-          quemPermitiu: formData.quemPermitiu || "Coord. Geral",
-          quemBuscou: formData.quemBuscou || "",
-          telefone: formData.telefone || null,
-          ativo: true,
-        });
-
-        salvoNaApi = true;
-        await carregarDadosApi();
-      } catch (err) {
-        console.warn("Falha ao salvar via API, inserindo localmente:", err);
-      }
+    if (!alunoEncontrado?.id) {
+      alert("Por favor, selecione um aluno válido existente na lista.");
+      return;
     }
 
-    if (!salvoNaApi) {
-      const novoRegistro: Entrada = {
-        id: String(Date.now()),
-        nome: formData.nome,
-        turma: formData.turma || "DS-1A",
-        entradaSaida: formData.entradaSaida as "Entrada" | "Saída",
-        dataHora: dataHoraFormatada,
-        motivos: formData.motivos || "Outros",
-        quemEmitiu: formData.quemEmitiu || "Prof. Sistema",
-        quemPermitiu: formData.quemPermitiu || "Coord. Geral",
-        quemBuscou: formData.quemBuscou,
-        telefone: formData.telefone,
-      };
+    try {
+      setLoading(true);
+      const dataIso = new Date(`${formData.data}T${formData.hora || "00:00"}`);
 
-      setTodosRegistros((prev) => [novoRegistro, ...prev]);
+      await InserirRegistro({
+        alunoId: alunoEncontrado.id,
+        data: isNaN(dataIso.getTime()) ? new Date() : dataIso,
+        entradaSaida: formData.entradaSaida,
+        motivo: formData.motivos || null,
+        quemEmitiu: formData.quemEmitiu || "Sistema",
+        quemPermitiu: formData.quemPermitiu || "Coordenação",
+        quemBuscou: formData.quemBuscou || "",
+        telefone: formData.telefone || null,
+        ativo: true,
+      });
+
+      await carregarDadosApi();
+      setFormData(getInitialFormData());
+      setModalStep(1);
+      setModalActive(false);
+    } catch (err: any) {
+      alert("Erro ao cadastrar registro na API: " + (err.message || "Erro de comunicação"));
+    } finally {
+      setLoading(false);
     }
-
-    setFormData(getInitialFormData());
-    setModalStep(1);
-    setModalActive(false);
   };
 
   const btStyles = { red: "danger", disable: "ghost" } as const;
@@ -233,34 +247,28 @@ export default function HomeDashboard() {
 
   useEffect(() => {
     const dadosGravados = localStorage.getItem("usuario_logado");
+    const token = localStorage.getItem("token");
 
-    if (!dadosGravados) {
+    if (!dadosGravados && !token) {
       router.push("/");
       return;
     }
 
-    try {
-      const parsed = JSON.parse(dadosGravados);
-      if (!parsed.token || parsed.token === "mock-token-123") {
-        parsed.token = DEV_VALID_TOKEN;
-        localStorage.setItem("usuario_logado", JSON.stringify(parsed));
-        localStorage.setItem("token", DEV_VALID_TOKEN);
+    if (dadosGravados) {
+      try {
+        const parsed = JSON.parse(dadosGravados);
+        setUsuario(parsed);
+      } catch {
+        setUsuario(null);
       }
-      setUsuario(parsed);
-    } catch {
-      setUsuario(null);
     }
 
     carregarDadosApi();
   }, [router]);
 
-  useEffect(() => {
-    fetchEntradas(currentPage);
-  }, [currentPage, todosRegistros]);
-
+  // Ao alterar o filtro, retorna à primeira página
   useEffect(() => {
     setCurrentPage(1);
-    fetchEntradas(1);
   }, [filtroNome, filtroTurma]);
 
   useEffect(() => {
@@ -273,76 +281,43 @@ export default function HomeDashboard() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const fetchEntradas = async (page: number) => {
-    setLoading(true);
-
-    try {
-      const filtered = todosRegistros.filter((e) => {
-        const matchNome = e.nome
-          .toLowerCase()
-          .includes(filtroNome.toLowerCase());
-
-        const matchTurma = e.turma
-          .toLowerCase()
-          .includes(filtroTurma.toLowerCase());
-
-        return matchNome && matchTurma;
-      });
-
-      const start = (page - 1) * PAGE_SIZE;
-
-      setEntradas(filtered.slice(start, start + PAGE_SIZE));
-      setTotalPages(Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
-      setTotalRegistros(filtered.length);
-    } catch (error) {
-      console.error("Erro ao filtrar entradas:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getPageNumbers = () => {
     const pages: (number | "...")[] = [];
 
-    if (totalPages <= 5) {
+    if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
     pages.push(1);
 
-    if (currentPage > 3) pages.push("...");
+    if (paginaAtual > 4) {
+      pages.push("...");
+    }
 
-    for (
-      let i = Math.max(2, currentPage - 1);
-      i <= Math.min(totalPages - 1, currentPage + 1);
-      i++
-    ) {
+    const start = Math.max(2, paginaAtual - 1);
+    const end = Math.min(totalPages - 1, paginaAtual + 1);
+
+    for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    if (currentPage < totalPages - 2) pages.push("...");
+    if (paginaAtual < totalPages - 3) {
+      pages.push("...");
+    }
 
     pages.push(totalPages);
 
     return pages;
   };
 
-  const opcoesTurmas =
-    turmas.length > 0
-      ? turmas.map((t) => ({ value: t.nome, label: t.nome }))
-      : [
-          { value: "DS-1A", label: "DS-1A" },
-          { value: "DS-1B", label: "DS-1B" },
-          { value: "DS-2A", label: "DS-2A" },
-          { value: "DS-2B", label: "DS-2B" },
-        ];
+  const opcoesTurmas = turmas.map((t) => ({ value: t.nome, label: t.nome }));
 
   if (!usuario) return null;
 
   return (
     <main className="root flex flex-row">
-      <div className="bg-[#F1F1F1] rounded-2xl w-[90vw] h-[90vh] flex flex-row items-center pr-3">
-        <section className="sidebar flex flex-col w-[15vw] rounded-2xl items-center bg-white shadow-black h-[90vh] p-7 z-1">
+      <div className="bg-[#F1F1F1] rounded-2xl w-[90vw] h-[93vh] flex flex-row items-center pr-3">
+        <section className="sidebar flex flex-col w-[15vw] rounded-2xl items-center bg-white shadow-black h-[93vh] p-7 z-1">
           <Image src={ImagemSenai} alt="Senai" width={100} height={37.5} />
 
           <Button
@@ -411,7 +386,7 @@ export default function HomeDashboard() {
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  className="flex items-center justify-center w-9 h-9 p-0 shadow-sm"
+                  className="flex items-center justify-center w-9 h-9 p-0 shadow-sm cursor-pointer"
                   title="Atualizar lista"
                   onClick={carregarDadosApi}
                   disabled={isRefreshing}
@@ -421,7 +396,7 @@ export default function HomeDashboard() {
 
                 <Button
                   variant="danger"
-                  className="gap-1.5 px-4 h-9 shadow-sm whitespace-nowrap"
+                  className="gap-1.5 px-4 h-9 shadow-sm whitespace-nowrap cursor-pointer"
                   onClick={() => {
                     setFormData(getInitialFormData());
                     setModalActive(true);
@@ -435,7 +410,7 @@ export default function HomeDashboard() {
                 <div className="flex items-center gap-2 relative">
                   <Button
                     variant="danger"
-                    className="flex items-center justify-center w-9 h-9 p-0 shadow-sm"
+                    className="flex items-center justify-center w-9 h-9 p-0 shadow-sm cursor-pointer"
                     onClick={() => setShowFiltro((v) => !v)}
                   >
                     <Funnel size={16} />
@@ -538,7 +513,7 @@ export default function HomeDashboard() {
                           </td>
 
                           <td className="px-3 py-3">
-                            <Text variant="subtitle">{e.dataHora}</Text>
+                            <Text variant="subtitle" className="text-[10px]">{e.dataHora}</Text>
                           </td>
 
                           <td className="px-3 py-3">
@@ -575,35 +550,55 @@ export default function HomeDashboard() {
                 </table>
               </div>
 
-              <div className="flex items-center justify-center px-4 py-2 border-t border-zinc-200 relative">
-                <span className="text-xs text-zinc-400 absolute left-4">
-                  {totalRegistros} registros · página {currentPage} de{" "}
-                  {totalPages}
+              <div className="flex items-center justify-between px-6 py-3 border-t border-zinc-200">
+                <span className="text-xs font-medium text-zinc-500">
+                  {totalRegistros} {totalRegistros === 1 ? "registro" : "registros"} · Página {paginaAtual} de {totalPages}
                 </span>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    title="Página anterior"
+                    disabled={paginaAtual <= 1}
+                    onClick={() => mudarPagina(paginaAtual - 1)}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+
                   {getPageNumbers().map((p, i) =>
                     p === "..." ? (
                       <span
                         key={`ellipsis-${i}`}
-                        className="px-1 text-zinc-400 text-sm"
+                        className="px-2 text-zinc-400 text-sm select-none"
                       >
                         …
                       </span>
                     ) : (
                       <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        className={`w-7 h-7 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                          currentPage === p
-                            ? "bg-red-600 text-white"
-                            : "text-zinc-600 hover:bg-zinc-100"
+                        type="button"
+                        key={`page-${p}`}
+                        onClick={() => mudarPagina(p)}
+                        className={`min-w-8 h-8 px-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                          paginaAtual === p
+                            ? "bg-red-600 text-white shadow-sm"
+                            : "text-zinc-600 hover:bg-zinc-100 border border-zinc-200"
                         }`}
                       >
                         {p}
                       </button>
-                    ),
+                    )
                   )}
+
+                  <button
+                    type="button"
+                    title="Próxima página"
+                    disabled={paginaAtual >= totalPages}
+                    onClick={() => mudarPagina(paginaAtual + 1)}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -653,7 +648,7 @@ export default function HomeDashboard() {
           <Form onSubmit={handleFormSubmit} spacing="md">
             {modalStep === 1 ? (
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                {/* ESQUERDA - 1: NOME */}
+                
                 <div>
                   <FormField
                     id="nome-aluno"
@@ -671,13 +666,14 @@ export default function HomeDashboard() {
                         ...prev,
                         nome: val,
                         alunoId: encontrado ? encontrado.id : prev.alunoId,
+                        turma: encontrado ? encontrarTurma(encontrado.id) : prev.turma,
                       }));
                     }}
                   />
                   <datalist id="lista-alunos-datalist">
-                    {alunos.map((a) => (
-                      <option key={a.id} value={a.nome}>
-                        {a.rm ? `RM: ${a.rm}` : ""}
+                    {alunos.map((aluno) => (
+                      <option key={aluno.id} value={aluno.nome}>
+                        {aluno.rm ? `RM: ${aluno.rm}` : ""}
                       </option>
                     ))}
                   </datalist>
@@ -720,7 +716,7 @@ export default function HomeDashboard() {
 
                 {/* DIREITA - 2: TURMA */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="turma" required>
+                  <Label htmlFor="turma">
                     Turma
                   </Label>
                   <Select
@@ -776,7 +772,7 @@ export default function HomeDashboard() {
                   </div>
                 </div>
 
-                {/* DIREITA - 3: QUEM EMITIU */}
+                
                 <FormField
                   id="quemEmitiu"
                   label="Quem emitiu"

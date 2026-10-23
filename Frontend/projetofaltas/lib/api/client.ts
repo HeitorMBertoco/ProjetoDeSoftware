@@ -1,14 +1,10 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://apifaltas.runasp.net/api';
 
-// Token JWT válido assinado com a SecretKey configurada no backend para desenvolvimento e testes
-export const DEV_VALID_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWRtaW4iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjExMTExMTExLTExMTEtMTExMS0xMTExLTExMTExMTExMTExMSIsImV4cCI6MTgyNDI5NzA2NiwiaWF0IjoxNzkyNzYxMDY2fQ.zQuYNpfNTuHHUgnLEJBQnB3bGpRRA0PYKkqMQsTQX7s';
-
 export function getAuthToken(): string {
-  if (typeof window === 'undefined') return DEV_VALID_TOKEN;
+  if (typeof window === 'undefined') return '';
 
   const directToken = localStorage.getItem('token');
-  if (directToken && directToken !== 'mock-token-123') {
+  if (directToken) {
     return directToken;
   }
 
@@ -16,16 +12,15 @@ export function getAuthToken(): string {
   if (usuarioLogado) {
     try {
       const parsed = JSON.parse(usuarioLogado);
-      if (parsed.token && parsed.token !== 'mock-token-123') {
+      if (parsed.token) {
         return parsed.token;
       }
     } catch {
-      // Ignora erro de parse
+      // Ignora erro de JSON parse
     }
   }
 
-  // Se não houver token real ou estiver com o mock-token-123 antigo, usa o token válido assinado
-  return DEV_VALID_TOKEN;
+  return '';
 }
 
 export function getAuthHeaders(extraHeaders: HeadersInit = {}): HeadersInit {
