@@ -1,4 +1,4 @@
-import { ILogin, IRecuperarSenha, IValidarRecuperacaoSenha } from ".././types/auth";
+import { ILogin, IRecuperarSenha, IValidarRecuperacaoSenha } from "../types/auth";
 
 const urlBase = "https://apifaltas.runasp.net/api/auth/";
 const token = ""
